@@ -47,6 +47,7 @@ var ai = {
 
     rules: [],
     fieldRule: null,
+    enabled: false,
     step: 0,
 
     addAiToUnit: function(unit) {
@@ -65,7 +66,7 @@ var ai = {
     },
 
     tick: function() {
-        if(intp.state === "running" && commander.side !== "spectators") {
+        if(ai.enabled && intp.state === "running" && commander.side !== "spectators") {
             for(var i in sim.things) {
                 var thing = sim.things[i];
                 if(thing.r26Ai) {
@@ -266,3 +267,5 @@ ai.setFieldRule(i => {
     }
     return 0;
 });
+
+ai.enabled = true;
