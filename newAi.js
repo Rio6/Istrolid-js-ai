@@ -126,13 +126,15 @@ var order = {
     unit: null,
 
     startOrdering: function(unit) {
-        oriSel = commander.selection;
+        if(order.oriSel.length === 0)
+            order.oriSel = commander.selection;
         order.unit = unit;
         battleMode.selectUnitsIds([unit.id]);
     },
 
     stopOrdering: function() {
-        battleMode.selectUnits(oriSel);
+        battleMode.selectUnits(order.oriSel);
+        order.oriSel = [];
     },
 
     move: function(pos, append) {
@@ -141,15 +143,26 @@ var order = {
     },
 
     follow: function(unit, append) {
+        if(order.unit.orders[0] &&
+            order.unit.orders[0].type === "Follow" &&
+            order.unit.orders[0].targetId === unit.id)
+            return
         battleMode.followOrder(unit, append);
     },
 
     stop: function() {
-        battleMode.stopOrder();
+        if(order.unit.orders.length > 0 || order.unit.holdPosition)
+            battleMode.stopOrder();
     },
 
     hold: function() {
-        battleMode.holdPositionOrder();
+        if(!order.unit.holdPosition)
+            battleMode.holdPositionOrder();
+    },
+
+    unhold: function() {
+        if(!order.unit.holdPosition)
+            battleMode.holdPositionOrder();
     },
 
     destruct: function() {
