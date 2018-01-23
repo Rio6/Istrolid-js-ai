@@ -56,7 +56,7 @@ var ai = {
         for(var i in ai.rules) {
             try {
                 if(typeof ai.rules[i].filter === "function" && ai.rules[i].filter(unit)) {
-                    unit.r26Ai = new ai.rules[i].ai();
+                    unit.r26Ai = new ai.rules[i].ai(unit);
                 }
             } catch(e) {
                 console.error(e.stack);
@@ -72,7 +72,7 @@ var ai = {
                     if((ai.step + thing.id) % 30 === 0) {
                         order.startOrdering(thing);
                         try {
-                            thing.r26Ai.run.call(thing);
+                            thing.r26Ai.run();
                         } catch(e) {
                             console.error(e.stack);
                         }
@@ -229,28 +229,28 @@ var movement = {
 
 ai.addAiRule({
     filter: unit => unit.spec.name === "AI",
-    ai: function() {
+    ai: function(unit) {
         this.run = function() {
             /*
-            var enemy = movement.spread(this, order.findThing(this, target => 
-                target.unit && target.side === otherSide(this.side) &&
-                v2.distance(this.pos, target.pos) < 1000));
+            var enemy = movement.spread(unit, order.findThing(unit, target => 
+                target.unit && target.side === otherSide(unit.side) &&
+                v2.distance(unit.pos, target.pos) < 1000));
                 */
-            var enemy = order.findThing(this, target => 
-                target.unit && target.side === otherSide(this.side) &&
-                v2.distance(this.pos, target.pos) < 1000)[0];
+            var enemy = order.findThing(unit, target => 
+                target.unit && target.side === otherSide(unit.side) &&
+                v2.distance(unit.pos, target.pos) < 1000)[0];
             if(enemy) {
                 order.follow(enemy);
                 return;
             }
 
-            if(this.orders.length > 0)
+            if(unit.orders.length > 0)
                 return;
-            var point = movement.spread(this, order.findThing(this, target =>
+            var point = movement.spread(unit, order.findThing(unit, target =>
                 target.commandPoint &&
-                (target.side !== this.side || target.capping > 0)));
+                (target.side !== unit.side || target.capping > 0)));
             if(point && point.commandPoint) {
-                var tgtPos = movement.inRange(this, this.tgt.pos, this.tgt.radius);
+                var tgtPos = movement.inRange(unit, unit.tgt.pos, unit.tgt.radius);
                 if(tgtPos) {
                     order.move(tgtPos);
                     return;
