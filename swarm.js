@@ -7,11 +7,11 @@ ai.addAiRule({
     ai: function(unit) {
         this.run = function() {
             /*
-            var enemy = movement.spread(unit, order.findThing(target =>
+            var enemy = movement.spread(unit, order.findThings(target =>
                 target.unit && target.side === otherSide(unit.side) &&
                 v2.distance(unit.pos, target.pos) < 1000, unit));
                 */
-            var enemy = order.findThing(target =>
+            var enemy = order.findThings(target =>
                 target.unit && target.side === otherSide(unit.side) &&
                 v2.distance(unit.pos, target.pos) < 1000, unit)[0];
             if(enemy) {
@@ -19,7 +19,7 @@ ai.addAiRule({
                 return;
             }
 
-            var point = movement.spread(unit, order.findThing(unit, target =>
+            var point = movement.spread(unit, order.findThings(unit, target =>
                 target.commandPoint &&
                 (target.side !== unit.side || target.capping > 0)));
             if(point && point.commandPoint) {
