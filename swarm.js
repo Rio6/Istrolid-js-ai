@@ -1,9 +1,9 @@
 /*
- * Swarm unit named "AI"
+ * Swarm unit named "BERRY"
  */
 
 ai.addAiRule({
-    filter: unit => unit.spec.name === "AI",
+    filter: unit => unit.spec.name === "BERRY",
     ai: function(unit) {
         this.run = function() {
             /*
@@ -19,8 +19,6 @@ ai.addAiRule({
                 return;
             }
 
-            if(unit.orders.length > 0)
-                return;
             var point = movement.spread(unit, order.findThing(unit, target =>
                 target.commandPoint &&
                 (target.side !== unit.side || target.capping > 0)));
@@ -36,7 +34,7 @@ ai.addAiRule({
 });
 
 ai.setFieldRule(i => {
-    if(buildBar.specToUnit(commander.buildBar[i]).name === "AI") {
+    if(buildBar.specToUnit(commander.buildBar[i]).name === "BERRY") {
         return 100 - commander.buildQ.length;
     }
     return 0;
