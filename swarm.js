@@ -33,8 +33,8 @@ ai.addAiRule({
     }
 });
 
-ai.setFieldRule(i => {
-    if(buildBar.specToUnit(commander.buildBar[i]).name === "BERRY") {
+ai.setFieldRule(unit => {
+    if(unit.name === "BERRY") {
         return 100 - commander.buildQ.length;
     }
     return 0;
