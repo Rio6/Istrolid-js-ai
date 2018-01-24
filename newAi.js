@@ -82,7 +82,7 @@ var ai = {
                 }
             }
 
-            if(ai.step % 30 === 0) {
+            if(ai.step % 60 === 0) {
                 try {
                     if(typeof fieldRule === "function") {
                         for(var i = 0; i < 10; i++) {
@@ -200,7 +200,7 @@ var movement = {
             var target = targets[i];
             if(!target || typeof target === "function") continue;
 
-            if(unit.tgt === target)
+            if(JSON.stringify(unit.tgt) === JSON.stringify(target))
                 return target;
 
             var targeted = 0;
@@ -210,7 +210,7 @@ var movement = {
                     thing.id !== unit.id &&
                     thing.side === unit.side &&
                     JSON.stringify(thing.spec) === JSON.stringify(unit.spec) &&
-                    thing.tgt === target) {
+                    JSON.stringify(thing.tgt) === JSON.stringify(target)) {
                     targeted++;
                 }
             }
