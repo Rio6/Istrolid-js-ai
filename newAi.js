@@ -163,7 +163,7 @@ var order = {
     },
 
     unhold: function() {
-        if(!order.unit.holdPosition)
+        if(order.unit.holdPosition)
             battleMode.holdPositionOrder();
     },
 
