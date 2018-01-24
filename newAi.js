@@ -169,8 +169,12 @@ var order = {
         battleMode.selfDestructOrder();
     },
 
-    findThing: function(unit, check) {
+    findThing: function(check, unit) {
         var rst = [];
+
+        if(!unit)
+            unit = {pos: [0, 0]};
+
         if(typeof check === "function") {
             for(var i in sim.things) {
                 var thing = sim.things[i];
@@ -179,7 +183,7 @@ var order = {
                 }
             }
         }
-        rst.sort((a, b) => 
+        rst.sort((a, b) =>
             v2.distanceSqr(a.pos, unit.pos) - v2.distanceSqr(b.pos, unit.pos));
         return rst;
     }
