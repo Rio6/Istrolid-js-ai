@@ -7,13 +7,13 @@ ai.addAiRule({
     ai: function(unit) {
         this.run = function() {
             /*
-            var enemy = movement.spread(unit, order.findThing(unit, target => 
+            var enemy = movement.spread(unit, order.findThing(target =>
                 target.unit && target.side === otherSide(unit.side) &&
-                v2.distance(unit.pos, target.pos) < 1000));
+                v2.distance(unit.pos, target.pos) < 1000, unit));
                 */
-            var enemy = order.findThing(unit, target => 
+            var enemy = order.findThing(target =>
                 target.unit && target.side === otherSide(unit.side) &&
-                v2.distance(unit.pos, target.pos) < 1000)[0];
+                v2.distance(unit.pos, target.pos) < 1000, unit)[0];
             if(enemy) {
                 order.follow(enemy);
                 return;
