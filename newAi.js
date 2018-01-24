@@ -171,7 +171,7 @@ var order = {
         battleMode.selfDestructOrder();
     },
 
-    findThing: function(check, unit) {
+    findThings: function(check, unit) {
         var rst = [];
 
         if(!unit)
