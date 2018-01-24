@@ -86,7 +86,9 @@ var ai = {
                 try {
                     if(typeof fieldRule === "function") {
                         for(var i = 0; i < 10; i++) {
-                            var number = fieldRule(buildBar.specToUnit(commander.buildBar[i]));
+                            var number = fieldRule(
+                                buildBar.specToUnit(commander.buildBar[i]),
+                                commander.buildQ.filter(x => x === i).length);
                             if(number !== 0)
                                 network.send("buildRq", i, number);
                         }
