@@ -137,6 +137,7 @@ var order = {
     stopOrdering: function() {
         battleMode.selectUnits(order.oriSel);
         order.oriSel = [];
+        order.unit = null;
     },
 
     move: function(pos, append) {
@@ -171,11 +172,9 @@ var order = {
         battleMode.selfDestructOrder();
     },
 
-    findThings: function(check, unit) {
+    findThings: function(check, closeTo) {
         var rst = [];
-
-        if(!unit)
-            unit = {pos: [0, 0]};
+        var unit = closeTo || order.unit || {pos: [0, 0]};
 
         if(typeof check === "function") {
             for(var i in sim.things) {
