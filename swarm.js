@@ -2,6 +2,8 @@
  * Swarm unit named "BERRY"
  */
 
+ai.clearAiRule();
+
 ai.addAiRule({
     filter: unit => unit.spec.name === "BERRY",
     ai: function(unit) {

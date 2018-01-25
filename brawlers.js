@@ -1,3 +1,10 @@
+/*
+ * Use BANANA as main ship
+ * 2 PEARs follow 1 BANANA
+ * 3 LONGAN in front of 1 BANANA
+ * 5 BERRY on field to cap
+ */
+
 ai.clearAiRule();
 
 ai.addAiRule({
@@ -6,11 +13,10 @@ ai.addAiRule({
         this.run = function() {
             var enemy = order.findThings(tgt =>
                 tgt.unit && tgt.side === otherSide(unit.side) &&
-                tgt.cost > 500 &&
-                v2.distance(tgt.pos, unit.pos) < 2000,
-                unit)[0];
+                tgt.cost > 500 && tgt.maxSpeed <= unit.maxSpeed &&
+                v2.distance(tgt.pos, unit.pos) < 2000)[0];
             if(enemy) {
-                if(v2.distance(unit.pos, enemy.pos) < 1500)
+                if(v2.distance(unit.pos, enemy.pos) < 1270)
                     order.hold();
                 else
                     order.unhold();
@@ -39,37 +45,44 @@ ai.addAiRule({
 
     ai: function(unit) {
 
-        var spawns = order.findThings(tgt => tgt.spawn);
-        this.s2s = v2.create();
-        v2.sub(spawns[1].pos, spawns[0].pos, this.s2s);
-
         this.run = function() {
-            var enemy = order.findThings(tgt =>
-                tgt.unit && tgt.side === otherSide(unit.side) &&
-                tgt.cost > 500 &&
-                v2.distance(tgt.pos, unit.pos) < 2200,
-                unit)[0];
-            if(enemy) {
-                order.follow(enemy);
-                return;
-            }
-
             var banana = order.findThings(tgt =>
                 tgt.unit &&
                 tgt.owner === unit.owner && tgt.side === unit.side &&
-                tgt.spec.name === "BANANA", unit)[0];
+                tgt.spec.name === "BANANA")[0];
             if(banana) {
-                if(v2.distance(unit.pos, banana.pos) > 2000) {
+                var distBanana = v2.distance(unit.pos, banana.pos);
+                if(distBanana > 2000) {
                     order.follow(banana);
                     return;
                 }
 
-                if(v2.dot(unit.pos, this.s2s) > v2.dot(banana.pos, this.s2s)) {
-                    order.stop();
+                var enemy = order.findThings(tgt =>
+                    tgt.unit && tgt.side === otherSide(unit.side) &&
+                    tgt.hp > 800)[0];
+                if(enemy) {
+                    order.follow(enemy);
+                    if(v2.distance(enemy.pos, banana.pos) < 2000) {
+                        order.unhold();
+                        return;
+                    }
+                }
+
+                if(v2.dot(unit.pos, banana.vel) > v2.dot(banana.pos, banana.vel)) {
+                    order.hold();
                     return;
-                } else if(banana.orders[0] && banana.orders[0].dest) {
-                    order.move(banana.orders[0].dest);
-                    return;
+                } else {
+                    order.unhold();
+                    if(!enemy && banana.preOrders[0]) {
+                        var dest;
+                        if(banana.preOrders[0].dest)
+                            dest = banana.preOrders[0].dest;
+                        else
+                            dest = sim.things[banana.preOrders[0].targetId].pos;
+
+                        order.move(dest);
+                        return;
+                    }
                 }
             }
         }
@@ -87,11 +100,11 @@ ai.addAiRule({
             /*
             var enemy = movement.spread(unit, order.findThings(target =>
                 target.unit && target.side === otherSide(unit.side) &&
-                v2.distance(unit.pos, target.pos) < 1000, unit));
+                v2.distance(unit.pos, target.pos) < 1000));
                 */
             var enemy = order.findThings(tgt =>
                 tgt.unit && tgt.side === otherSide(unit.side) &&
-                v2.distance(unit.pos, tgt.pos) < 1000, unit)[0];
+                v2.distance(unit.pos, tgt.pos) < 1000)[0];
             if(enemy) {
                 order.follow(enemy);
                 return;
@@ -99,7 +112,7 @@ ai.addAiRule({
 
             var point = movement.spread(unit, order.findThings(tgt =>
                 tgt.commandPoint &&
-                (tgt.side !== unit.side || tgt.capping > 0), unit));
+                (tgt.side !== unit.side || tgt.capping > 0)));
             if(point) {
                 var tgtPos = movement.inRange(unit, unit.tgt.pos, unit.tgt.radius);
                 if(tgtPos) {
@@ -115,35 +128,38 @@ ai.addAiRule({
     filter: unit => unit.spec.name === "LONGAN",
     ai: function(unit) {
 
-        var spawns = order.findThings(tgt => tgt.spawn);
-        this.s2s = v2.create();
-        v2.sub(spawns[1].pos, spawns[0].pos, this.s2s);
-
         this.run = function() {
-            var enemy = order.findThings(tgt =>
-                tgt.unit && tgt.side === otherSide(unit.side) &&
-                v2.distance(unit.pos, tgt.pos) < 1120, unit)[0];
-            if(enemy) {
-                order.follow(enemy);
-                return;
-            }
-
             var banana = order.findThings(tgt =>
                 tgt.unit && tgt.side === unit.side &&
                 tgt.spec.name === "BANANA" && tgt.owner === commander.number,
                 unit)[0];
             if(banana) {
-                if(v2.distance(unit.pos, banana.pos) > 600) {
+                var distBanana = v2.distance(unit.pos, banana.pos);
+                if(distBanana > 800) {
                     order.follow(banana);
                     return;
                 }
 
-                var offsetted = v2.add(v2.scale(v2.norm(this.s2s), 500, v2.create()), banana.pos);
-                if(v2.dot(unit.pos, this.s2s) > v2.dot(offsetted, this.s2s)) {
+                var enemy = order.findThings(tgt =>
+                    tgt.unit && tgt.side === otherSide(unit.side) &&
+                    v2.distance(unit.pos, banana.pos) < 600, banana)[0];
+                if(enemy && distBanana < 600) {
+                    order.follow(enemy);
+                    return;
+                }
+
+                var offsetted = v2.add(v2.scale(v2.norm(banana.vel, v2.create), 300), banana.pos);
+                if(v2.dot(unit.pos, banana.vel) > v2.dot(offsetted, banana.vel)) {
                     order.stop();
                     return;
-                } else if(banana.orders[0] && banana.orders[0].dest) {
-                    order.move(banana.orders[0].dest);
+                } else if(banana.preOrders[0]) {
+                    var dest;
+                    if(banana.preOrders[0].dest)
+                        dest = banana.preOrders[0].dest;
+                    else
+                        dest = sim.things[banana.preOrders[0].targetId].pos;
+
+                    order.move(dest);
                     return;
                 }
             }
@@ -158,7 +174,7 @@ ai.setFieldRule((unit, number) => {
     if(unit.name === "BANANA") {
         var bananaCount = order.findThings(
             tgt => tgt.unit && tgt.spec.name === "BANANA").length;
-        if(bananaCount > 0 && commander.money > unit.cost + 1000 ||
+        if(bananaCount > 0 && commander.money > unit.cost + 500 ||
             bananaCount <= 0 && commander.money > unit.cost)
             return 1;
     } else if(unit.name === "PEAR") {
@@ -166,7 +182,7 @@ ai.setFieldRule((unit, number) => {
             tgt => tgt.unit && tgt.spec.name === "PEAR").length;
         var bananaCount = order.findThings(
             tgt => tgt.unit && tgt.spec.name === "BANANA").length;
-        if(pearCount < bananaCount * 2 && bananaCount > 0 && commander.money > unit.cost + 500)
+        if(pearCount < bananaCount * 2 && bananaCount > 0 && commander.money > unit.cost)
             return 1;
     } else if(unit.name === "BERRY") {
         if(number < 1 && order.findThings(tgt => tgt.unit &&
