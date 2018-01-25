@@ -9,17 +9,17 @@ ai.addAiRule({
             /*
             var enemy = movement.spread(unit, order.findThings(target =>
                 target.unit && target.side === otherSide(unit.side) &&
-                v2.distance(unit.pos, target.pos) < 1000, unit));
+                v2.distance(unit.pos, target.pos) < 1000));
                 */
             var enemy = order.findThings(target =>
                 target.unit && target.side === otherSide(unit.side) &&
-                v2.distance(unit.pos, target.pos) < 1000, unit)[0];
+                v2.distance(unit.pos, target.pos) < 1000)[0];
             if(enemy) {
                 order.follow(enemy);
                 return;
             }
 
-            var point = movement.spread(unit, order.findThings(unit, target =>
+            var point = movement.spread(unit, order.findThings(target =>
                 target.commandPoint &&
                 (target.side !== unit.side || target.capping > 0)));
             if(point && point.commandPoint) {
