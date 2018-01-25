@@ -146,15 +146,15 @@ var order = {
     },
 
     follow: function(unit, append) {
-        if(order.unit.orders[0] &&
-            order.unit.orders[0].type === "Follow" &&
-            order.unit.orders[0].targetId === unit.id)
+        if(order.unit.preOrders[0] &&
+            order.unit.preOrders[0].type === "Follow" &&
+            order.unit.preOrders[0].targetId === unit.id)
             return
         battleMode.followOrder(unit, append);
     },
 
     stop: function() {
-        if(order.unit.orders.length > 0 || order.unit.holdPosition)
+        if(order.unit.preOrders.length > 0 || order.unit.holdPosition)
             battleMode.stopOrder();
     },
 
@@ -229,8 +229,8 @@ var movement = {
 
         var oriTgt = unit.pos;
 
-        if(unit.orders[0]) {
-            var order = unit.orders[0];
+        if(unit.preOrders[0]) {
+            var order = unit.preOrders[0];
             if(order.type === "Move")
                 oriTgt = order.dest;
             else if(order.type === "Follow")
