@@ -199,7 +199,7 @@ var movement = {
             var target = targets[i];
             if(!target || typeof target === "function") continue;
 
-            if(JSON.stringify(unit.tgt) === JSON.stringify(target))
+            if(simpleEquals(unit.tgt, target))
                 return target;
 
             var targeted = 0;
@@ -208,8 +208,8 @@ var movement = {
                 if(thing.unit &&
                     thing.id !== unit.id &&
                     thing.side === unit.side &&
-                    JSON.stringify(thing.spec) === JSON.stringify(unit.spec) &&
-                    JSON.stringify(thing.tgt) === JSON.stringify(target)) {
+                    simpleEquals(thing.spec, unit.spec) &&
+                    simpleEquals(thing.tgt, target)) {
                     targeted++;
                 }
             }
