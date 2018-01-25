@@ -231,10 +231,13 @@ var movement = {
 
         if(unit.preOrders[0]) {
             var order = unit.preOrders[0];
-            if(order.type === "Move")
+            if(order.type === "Move") {
                 oriTgt = order.dest;
-            else if(order.type === "Follow")
-                oriTgt = sim.things[order.targetId].pos;
+            } else if(order.type === "Follow") {
+                var target = sim.things[order.targetId];
+                if(target)
+                    oriTgt = target.pos;
+            }
         }
 
         if(v2.distanceSqr(oriTgt, target) < radius * radius)
