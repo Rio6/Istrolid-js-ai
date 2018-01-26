@@ -239,9 +239,9 @@ var movement = {
             if(order.type === "Move") {
                 oriTgt = order.dest;
             } else if(order.type === "Follow") {
-                var target = sim.things[order.targetId];
-                if(target)
-                    oriTgt = target.pos;
+                var fTarget = sim.things[order.targetId];
+                if(fTarget)
+                    oriTgt = fTarget.pos;
             }
         }
 
