@@ -194,6 +194,9 @@ var order = {
 
 var movement = {
     spread: function(unit, targets) {
+
+        if(!unit || !targets) return;
+
         var rst = [];
         for(var i in targets) {
             var target = targets[i];
@@ -226,6 +229,8 @@ var movement = {
     },
 
     inRange: function(unit, target, radius) {
+
+        if(!unit || !target) return;
 
         var oriTgt = unit.pos;
 
