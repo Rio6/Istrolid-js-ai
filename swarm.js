@@ -25,7 +25,7 @@ ai.addAiRule({
                 target.commandPoint &&
                 (target.side !== unit.side || target.capping > 0)));
             if(point && point.commandPoint) {
-                var tgtPos = movement.inRange(unit, unit.tgt.pos, unit.tgt.radius);
+                var tgtPos = movement.inRange(unit, point.pos, point.radius);
                 if(tgtPos) {
                     order.move(tgtPos);
                     return;
