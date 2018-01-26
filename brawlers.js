@@ -13,7 +13,7 @@ ai.addAiRule({
         this.run = function() {
             var enemy = order.findThings(tgt =>
                 tgt.unit && tgt.side === otherSide(unit.side) &&
-                tgt.cost > 500 && tgt.maxSpeed <= unit.maxSpeed &&
+                tgt.cost > 500 && tgt.maxSpeed * 16 < 100 &&
                 v2.distance(tgt.pos, unit.pos) < 2000)[0];
             if(enemy) {
                 if(v2.distance(unit.pos, enemy.pos) < 1270)
@@ -142,8 +142,8 @@ ai.addAiRule({
 
                 var enemy = order.findThings(tgt =>
                     tgt.unit && tgt.side === otherSide(unit.side) &&
-                    v2.distance(unit.pos, banana.pos) < 600, banana)[0];
-                if(enemy && distBanana < 600) {
+                    v2.distance(tgt.pos, banana.pos) < 600, banana)[0];
+                if(enemy) {
                     order.follow(enemy);
                     return;
                 }
