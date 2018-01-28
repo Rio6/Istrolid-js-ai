@@ -41,6 +41,11 @@ v2.distanceSqr = function(from, to) {
     return x * x + y * y;
 }
 
+// Turrets don't have tracking flag
+// Set it for them
+parts.SidewinderTurret.prototype.tracking = true;
+parts.MissileTurret.prototype.tracking = true;
+
 //-----------------------------------------------------------------------------
 
 var ai = {
@@ -190,6 +195,48 @@ var order = {
         rst.sort((a, b) =>
             v2.distanceSqr(a.pos, unit.pos) - v2.distanceSqr(b.pos, unit.pos));
         return rst;
+    }
+}
+
+//-----------------------------------------------------------------------------
+
+var condition = {
+    inRangeDps: function(pos, side, dps) {
+        var totalDps = 0;
+
+        for(var i in sim.things) {
+            var target = sim.things[i];
+            if(target.unit && target.side === otherSide(side)) {
+                for(var j in target.weapons) {
+                    if(j === "last") continue;
+                    var weapon = target.weapons[j];
+
+                    var range = weapon.range;
+                    if(v2.distanceSqr(pos, weapon.worldPos) <= range * range)
+                        totalDps += weapon.dps * 16;
+                }
+            }
+        }
+        return totalDps >= dps;
+    },
+
+    inRangeWeapon: function(pos, side, check) {
+        if(typeof check !== "function") return false;
+
+        for(var i in sim.things) {
+            var target = sim.things[i];
+            if(target.unit && target.side === otherSide(side)) {
+                for(var j in target.weapons) {
+                    if(j === "last") continue;
+                    var weapon = target.weapons[j];
+
+                    var range = weapon.range;
+                    if(v2.distanceSqr(pos, weapon.worldPos) <= range * range && check(weapon))
+                        return true;
+                }
+            }
+        }
+        return false;
     }
 }
 
