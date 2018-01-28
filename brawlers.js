@@ -84,6 +84,24 @@ ai.addAiRule({
                         return;
                     }
                 }
+            } else {
+                var enemy = order.findThings(tgt =>
+                    tgt.unit && tgt.side === otherSide(unit.side) &&
+                    tgt.hp > 800)[0];
+                if(enemy) {
+                    order.follow(enemy);
+                    return;
+                }
+            }
+
+            var spawn = order.findThings(tgt =>
+                tgt.spawn && tgt.side !== unit.side);
+            var point = order.findThings(tgt =>
+                tgt.commandPoint, spawn[0])[0];
+            if(point) {
+                var dest = movement.inRange(unit, point.pos, point.radius);
+                if(dest)
+                    order.move(dest);
             }
         }
     }
@@ -114,7 +132,7 @@ ai.addAiRule({
                 tgt.commandPoint &&
                 (tgt.side !== unit.side || tgt.capping > 0)));
             if(point) {
-                var tgtPos = movement.inRange(unit, unit.tgt.pos, unit.tgt.radius);
+                var tgtPos = movement.inRange(unit, point.pos, point.radius);
                 if(tgtPos) {
                     order.move(tgtPos);
                     return;
