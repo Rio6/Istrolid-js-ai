@@ -13,7 +13,7 @@ ai.addAiRule({
         this.run = function() {
             var enemy = order.findThings(tgt =>
                 tgt.unit && tgt.side === otherSide(unit.side) &&
-                tgt.cost > 500 && tgt.maxSpeed * 16 < 100 &&
+                tgt.cost > 500 && tgt.maxSpeed * 16 < 150 &&
                 v2.distance(tgt.pos, unit.pos) < 2000)[0];
             if(enemy) {
                 if(v2.distance(unit.pos, enemy.pos) < 1270)
@@ -59,7 +59,7 @@ ai.addAiRule({
 
                 var enemy = order.findThings(tgt =>
                     tgt.unit && tgt.side === otherSide(unit.side) &&
-                    tgt.hp > 800)[0];
+                    tgt.maxHP > 800)[0];
                 if(enemy) {
                     order.follow(enemy);
                     if(v2.distance(enemy.pos, banana.pos) < 2000) {
@@ -73,12 +73,13 @@ ai.addAiRule({
                     return;
                 } else {
                     order.unhold();
-                    if(!enemy && banana.preOrders[0]) {
+                    var bananaOrder = banana.orders[0] || banana.preOrders[0];
+                    if(!enemy && bananaOrder) {
                         var dest;
-                        if(banana.preOrders[0].dest)
-                            dest = banana.preOrders[0].dest;
+                        if(bananaOrder.dest)
+                            dest = bananaOrder.dest;
                         else
-                            dest = sim.things[banana.preOrders[0].targetId].pos;
+                            dest = sim.things[bananaOrder.targetId].pos;
 
                         order.move(dest);
                         return;
@@ -110,16 +111,14 @@ ai.addAiRule({
 ai.addAiRule({
     filter: unit => unit.spec.name === "BERRY",
     ai: function(unit) {
+
+        this.lastPointCount = 0;
+
         this.run = function() {
 
             if(unit.energy <= 0)
                 order.destruct();
 
-            /*
-            var enemy = movement.spread(unit, order.findThings(target =>
-                target.unit && target.side === otherSide(unit.side) &&
-                v2.distance(unit.pos, target.pos) < 1000));
-                */
             var enemy = order.findThings(tgt =>
                 tgt.unit && tgt.side === otherSide(unit.side) &&
                 v2.distance(unit.pos, tgt.pos) < 1000)[0];
@@ -128,9 +127,20 @@ ai.addAiRule({
                 return;
             }
 
-            var point = movement.spread(unit, order.findThings(tgt =>
-                tgt.commandPoint &&
-                (tgt.side !== unit.side || tgt.capping > 0)));
+            var points = order.findThings(target =>
+                target.commandPoint &&
+                (target.side !== unit.side || target.capping > 0) &&
+                !(condition.inRangeWeapon(target.pos, unit.side,
+                    weapon => weapon.range > 800 && weapon.dps >= 55 &&
+                    (weapon.instant || weapon.tracking)) ||
+                condition.inRangeDps(target.pos, unit.side, unit.hp)));
+
+            if(this.lastPointCount !== points.length) {
+                unit.tgt = null;
+                this.lastPointCount = points.length;
+            }
+
+            var point = movement.spread(unit, points);
             if(point) {
                 var tgtPos = movement.inRange(unit, point.pos, point.radius);
                 if(tgtPos) {
@@ -153,33 +163,53 @@ ai.addAiRule({
                 unit)[0];
             if(banana) {
                 var distBanana = v2.distance(unit.pos, banana.pos);
-                if(distBanana > 800) {
+                if(distBanana > 1000) {
                     order.follow(banana);
                     return;
                 }
 
                 var enemy = order.findThings(tgt =>
                     tgt.unit && tgt.side === otherSide(unit.side) &&
-                    v2.distance(tgt.pos, banana.pos) < 600, banana)[0];
+                    v2.distance(tgt.pos, banana.pos) < 1000, banana)[0];
                 if(enemy) {
                     order.follow(enemy);
                     return;
                 }
 
-                var offsetted = v2.add(v2.scale(v2.norm(banana.vel, v2.create), 300), banana.pos);
+                var offsetted = v2.add(v2.scale(v2.norm(banana.vel, v2.create()), 300), banana.pos);
                 if(v2.dot(unit.pos, banana.vel) > v2.dot(offsetted, banana.vel)) {
                     order.stop();
                     return;
-                } else if(banana.preOrders[0]) {
-                    var dest;
-                    if(banana.preOrders[0].dest)
-                        dest = banana.preOrders[0].dest;
-                    else
-                        dest = sim.things[banana.preOrders[0].targetId].pos;
+                } else {
+                    var bananaOrder = banana.orders[0] || banana.preOrders[0];
+                    if(!enemy && bananaOrder) {
+                        var dest;
+                        if(bananaOrder.dest)
+                            dest = bananaOrder.dest;
+                        else
+                            dest = sim.things[bananaOrder.targetId].pos;
 
-                    order.move(dest);
+                        order.move(dest);
+                        return;
+                    }
+                }
+            } else {
+                var enemy = order.findThings(tgt =>
+                    tgt.unit && tgt.side === otherSide(unit.side))[0];
+                if(enemy) {
+                    order.follow(enemy);
                     return;
                 }
+            }
+
+            var spawn = order.findThings(tgt =>
+                tgt.spawn && tgt.side !== unit.side);
+            var point = order.findThings(tgt =>
+                tgt.commandPoint, spawn[0])[0];
+            if(point) {
+                var dest = movement.inRange(unit, point.pos, point.radius);
+                if(dest)
+                    order.move(dest);
             }
         }
     }
@@ -206,7 +236,7 @@ ai.setFieldRule((unit, number) => {
         if(number < 1 && order.findThings(tgt => tgt.unit &&
             tgt.spec.name === "BERRY").length < 5)
             return 1;
-    } else if(unit.name === "LONGAN" && commander.money > unit.cost * 3) {
+    } else if(unit.name === "LONGAN" && commander.money > unit.cost) {
         var bananaCount = order.findThings(
             tgt => tgt.unit && tgt.spec.name === "BANANA").length;
         var longanCount = order.findThings(
