@@ -237,6 +237,13 @@ var condition = {
             }
         }
         return false;
+    },
+
+    isBusy: function(unit) {
+        if(unit && unit.unit) {
+            return unit.orders.length + unit.preOrders.length > 0;
+        }
+        return false;
     }
 }
 
