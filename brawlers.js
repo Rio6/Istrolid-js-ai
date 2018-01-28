@@ -57,24 +57,18 @@ ai.addAiRule({
                     return;
                 }
 
-                var enemy = order.findThings(tgt =>
+                var enemy = movement.spread(unit, order.findThings(tgt =>
                     tgt.unit && tgt.side === otherSide(unit.side) &&
-                    tgt.maxHP > 500)[0];
+                    tgt.maxHP > 500));
                 if(enemy) {
                     order.follow(enemy);
                     if(v2.distance(enemy.pos, banana.pos) < 2000) {
                         order.unhold();
                         return;
                     }
-                }
-
-                if(v2.dot(unit.pos, banana.vel) > v2.dot(banana.pos, banana.vel)) {
-                    order.hold();
-                    return;
                 } else {
-                    order.unhold();
                     var bananaOrder = banana.orders[0] || banana.preOrders[0];
-                    if(!enemy && bananaOrder) {
+                    if(bananaOrder) {
                         var dest;
                         if(bananaOrder.dest)
                             dest = bananaOrder.dest;
@@ -82,27 +76,32 @@ ai.addAiRule({
                             dest = sim.things[bananaOrder.targetId].pos;
 
                         order.move(dest);
-                        return;
                     }
                 }
+
+                if(v2.dot(unit.pos, banana.vel) > v2.dot(banana.pos, banana.vel)) {
+                    order.hold();
+                } else {
+                    order.unhold();
+                }
             } else {
-                var enemy = order.findThings(tgt =>
+                var enemy = movement.spread(unit, order.findThings(tgt =>
                     tgt.unit && tgt.side === otherSide(unit.side) &&
-                    tgt.hp > 800)[0];
+                    tgt.hp > 800));
                 if(enemy) {
                     order.follow(enemy);
                     return;
                 }
-            }
 
-            var spawn = order.findThings(tgt =>
-                tgt.spawn && tgt.side !== unit.side);
-            var point = order.findThings(tgt =>
-                tgt.commandPoint, spawn[0])[0];
-            if(point) {
-                var dest = movement.inRange(unit, point.pos, point.radius);
-                if(dest)
-                    order.move(dest);
+                var spawn = order.findThings(tgt =>
+                    tgt.spawn && tgt.side !== unit.side);
+                var point = order.findThings(tgt =>
+                    tgt.commandPoint, spawn[0])[0];
+                if(point) {
+                    var dest = movement.inRange(unit, point.pos, point.radius);
+                    if(dest)
+                        order.move(dest);
+                }
             }
         }
     }
@@ -149,8 +148,7 @@ ai.addAiRule({
                 return;
             }
 
-            if(unit.orders.length + unit.preOrders.length > 0)
-                return;
+            if(condition.isBusy(unit)) return;
 
             var banana = order.findThings(tgt =>
                 tgt.unit &&
