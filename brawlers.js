@@ -59,7 +59,7 @@ ai.addAiRule({
 
                 var enemy = order.findThings(tgt =>
                     tgt.unit && tgt.side === otherSide(unit.side) &&
-                    tgt.maxHP > 800)[0];
+                    tgt.maxHP > 500)[0];
                 if(enemy) {
                     order.follow(enemy);
                     if(v2.distance(enemy.pos, banana.pos) < 2000) {
@@ -133,7 +133,7 @@ ai.addAiRule({
                 !(condition.inRangeWeapon(target.pos, unit.side,
                     weapon => weapon.range > 800 && weapon.dps >= 55 &&
                     (weapon.instant || weapon.tracking)) ||
-                condition.inRangeDps(target.pos, unit.side, unit.hp)));
+                    condition.inRangeDps(target.pos, unit.side, unit.hp)));
 
             if(this.lastPointCount !== points.length) {
                 unit.tgt = null;
@@ -145,8 +145,20 @@ ai.addAiRule({
                 var tgtPos = movement.inRange(unit, point.pos, point.radius);
                 if(tgtPos) {
                     order.move(tgtPos);
-                    return;
                 }
+                return;
+            }
+
+            if(unit.orders.length + unit.preOrders.length > 0)
+                return;
+
+            var banana = order.findThings(tgt =>
+                tgt.unit &&
+                tgt.owner === unit.owner && tgt.side === unit.side &&
+                tgt.spec.name === "BANANA")[0];
+            if(banana) {
+                order.follow(banana);
+                return;
             }
         }
     }
