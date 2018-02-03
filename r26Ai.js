@@ -82,10 +82,10 @@ var r26Ai = {
                         } catch(e) {
                             console.error(e.stack);
                         }
-                        order.stopOrdering();
                     }
                 }
             }
+            order.stopOrdering();
 
             if(r26Ai.step % 60 === 0) {
                 try {
@@ -129,19 +129,20 @@ var r26Ai = {
 
 var order = {
 
-    oriSel: [],
+    oriSel: null,
     unit: null,
 
     startOrdering: function(unit) {
-        if(order.oriSel.length === 0)
+        if(!order.oriSel)
             order.oriSel = commander.selection;
         order.unit = unit;
         battleMode.selectUnitsIds([unit.id]);
     },
 
     stopOrdering: function() {
-        battleMode.selectUnits(order.oriSel);
-        order.oriSel = [];
+        if(order.oriSel)
+            battleMode.selectUnits(order.oriSel);
+        order.oriSel = null;
         order.unit = null;
     },
 
@@ -151,6 +152,8 @@ var order = {
     },
 
     follow: function(unit, append) {
+        if(!unit) return;
+
         var unitOrder = order.getUnitOrders(order.unit)[0];
         if(unitOrder &&
             unitOrder.type === "Follow" &&
