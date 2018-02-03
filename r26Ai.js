@@ -151,17 +151,16 @@ var order = {
     },
 
     follow: function(unit, append) {
-        var order = unit.orders[0] || unit.preOrders[0];
-        if(order &&
-            order.type === "Follow" &&
-            order.targetId === unit.id)
+        var unitOrder = order.getUnitOrders(order.unit)[0];
+        if(unitOrder &&
+            unitOrder.type === "Follow" &&
+            unitOrder.targetId === unit.id)
             return
         battleMode.followOrder(unit, append);
     },
 
     stop: function() {
-        if(order.unit.orders.length > 0 ||
-            order.unit.preOrders.length > 0 ||
+        if(order.getUnitOrders(order.unit).length > 0 ||
             order.unit.holdPosition)
             battleMode.stopOrder();
     },
@@ -195,6 +194,17 @@ var order = {
         rst.sort((a, b) =>
             v2.distanceSqr(a.pos, unit.pos) - v2.distanceSqr(b.pos, unit.pos));
         return rst;
+    },
+
+    getUnitOrders(unit) {
+        var unit = unit || order.unit;
+        if(unit) {
+            if(unit.orders && unit.orders.length > 0)
+                return unit.orders;
+            else if(unit.preOrders.length > 0)
+                return unit.preOrders;
+        }
+        return [];
     }
 }
 
@@ -293,12 +303,12 @@ var movement = {
 
         var oriTgt = unit.pos;
 
-        var order = unit.orders[0] || unit.preOrders[0];
-        if(order) {
-            if(order.type === "Move") {
-                oriTgt = order.dest;
-            } else if(order.type === "Follow") {
-                var fTarget = sim.things[order.targetId];
+        var unitOrder = order.getUnitOrders(unit);
+        if(unitOrder) {
+            if(unitOrder.type === "Move") {
+                oriTgt = unitOrder.dest;
+            } else if(unitOrder.type === "Follow") {
+                var fTarget = sim.things[unitOrder.targetId];
                 if(fTarget)
                     oriTgt = fTarget.pos;
             }
@@ -313,7 +323,7 @@ var movement = {
     avoidShots: function(unit, avoidDamage, bulletType) {
         if(!unit || !unit.unit) return;
 
-        var unitClone = Object.assign(dummyUnit, unit);
+        var unitClone = Object.assign(movement.dummyUnit, unit);
         sim.spacesRebuild();
         if(ais.avoidShots(unitClone, avoidDamage, bulletType)) {
             return unitClone.orders[0].dest;
