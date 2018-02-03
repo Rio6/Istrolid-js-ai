@@ -250,6 +250,8 @@ var condition = {
 //-----------------------------------------------------------------------------
 
 var movement = {
+    dummyUnit: new types.Unit(),
+
     spread: function(unit, targets) {
 
         if(!unit || !targets) return;
@@ -306,5 +308,15 @@ var movement = {
             return;
 
         return v2.sub(target, v2.scale(v2.norm(v2.sub(target, unit.pos, [0, 0])), radius - unit.radius), v2.create());
+    },
+
+    avoidShots: function(unit, avoidDamage, bulletType) {
+        if(!unit || !unit.unit) return;
+
+        var unitClone = Object.assign(dummyUnit, unit);
+        sim.spacesRebuild();
+        if(ais.avoidShots(unitClone, avoidDamage, bulletType)) {
+            return unitClone.orders[0].dest;
+        }
     }
 }
