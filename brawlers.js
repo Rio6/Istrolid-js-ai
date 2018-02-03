@@ -5,9 +5,9 @@
  * 5 BERRY on field to cap
  */
 
-ai.clearAiRule();
+r26Ai.clearAiRule();
 
-ai.addAiRule({
+r26Ai.addAiRule({
     filter: unit => unit.spec.name === "BANANA",
     ai: function(unit) {
         this.run = function() {
@@ -40,7 +40,7 @@ ai.addAiRule({
     }
 });
 
-ai.addAiRule({
+r26Ai.addAiRule({
     filter: unit => unit.spec.name === "PEAR",
 
     ai: function(unit) {
@@ -107,7 +107,7 @@ ai.addAiRule({
     }
 });
 
-ai.addAiRule({
+r26Ai.addAiRule({
     filter: unit => unit.spec.name === "BERRY",
     ai: function(unit) {
 
@@ -162,7 +162,7 @@ ai.addAiRule({
     }
 });
 
-ai.addAiRule({
+r26Ai.addAiRule({
     filter: unit => unit.spec.name === "LONGAN",
     ai: function(unit) {
 
@@ -225,7 +225,7 @@ ai.addAiRule({
     }
 });
 
-ai.setFieldRule((unit, number) => {
+r26Ai.setFieldRule((unit, number) => {
 
     if(number > 0) return;
 
@@ -258,4 +258,4 @@ ai.setFieldRule((unit, number) => {
     return 0;
 });
 
-ai.enabled = true;
+r26Ai.enabled = true;

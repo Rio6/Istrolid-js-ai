@@ -2,9 +2,9 @@
  * Swarm unit named "BERRY"
  */
 
-ai.clearAiRule();
+r26Ai.clearAiRule();
 
-ai.addAiRule({
+r26Ai.addAiRule({
     filter: unit => unit.spec.name === "BERRY",
     ai: function(unit) {
         this.run = function() {
@@ -35,11 +35,11 @@ ai.addAiRule({
     }
 });
 
-ai.setFieldRule(unit => {
+r26Ai.setFieldRule(unit => {
     if(unit.name === "BERRY") {
         return 100 - commander.buildQ.length;
     }
     return 0;
 });
 
-ai.enabled = true;
+r26Ai.enabled = true;

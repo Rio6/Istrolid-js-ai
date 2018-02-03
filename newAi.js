@@ -23,7 +23,7 @@ Interpolator.prototype.process = function(data) {
     for(var i in newIds) {
         var t = sim.things[newIds[i]];
         if(t) {
-            ai.addAiToUnit(t);
+            r26Ai.addAiToUnit(t);
         }
     }
 
@@ -31,7 +31,7 @@ Interpolator.prototype.process = function(data) {
 }
 
 BattleMode.prototype.tick = function() {
-    ai.tick();
+    r26Ai.tick();
     return hook.tick.call(this);
 }
 
@@ -48,7 +48,7 @@ parts.MissileTurret.prototype.tracking = true;
 
 //-----------------------------------------------------------------------------
 
-var ai = {
+var r26Ai = {
 
     rules: [],
     fieldRule: null,
@@ -59,10 +59,10 @@ var ai = {
         if(unit.owner !== commander.number)
             return;
 
-        for(var i in ai.rules) {
+        for(var i in r26Ai.rules) {
             try {
-                if(typeof ai.rules[i].filter === "function" && ai.rules[i].filter(unit)) {
-                    unit.r26Ai = new ai.rules[i].ai(unit);
+                if(typeof r26Ai.rules[i].filter === "function" && r26Ai.rules[i].filter(unit)) {
+                    unit.r26Ai = new r26Ai.rules[i].ai(unit);
                 }
             } catch(e) {
                 console.error(e.stack);
@@ -71,11 +71,11 @@ var ai = {
     },
 
     tick: function() {
-        if(ai.enabled && intp.state === "running" && commander.side !== "spectators") {
+        if(r26Ai.enabled && intp.state === "running" && commander.side !== "spectators") {
             for(var i in sim.things) {
                 var thing = sim.things[i];
                 if(thing.r26Ai) {
-                    if((ai.step + thing.id) % 30 === 0) {
+                    if((r26Ai.step + thing.id) % 30 === 0) {
                         order.startOrdering(thing);
                         try {
                             thing.r26Ai.run();
@@ -87,11 +87,11 @@ var ai = {
                 }
             }
 
-            if(ai.step % 60 === 0) {
+            if(r26Ai.step % 60 === 0) {
                 try {
-                    if(typeof fieldRule === "function") {
+                    if(typeof r26Ai.fieldRule === "function") {
                         for(var i = 0; i < 10; i++) {
-                            var number = fieldRule(
+                            var number = r26Ai.fieldRule(
                                 buildBar.specToUnit(commander.buildBar[i]),
                                 commander.buildQ.filter(x => x === i).length);
                             if(number !== 0)
@@ -102,26 +102,26 @@ var ai = {
                     console.error(e.stack);
                 }
             }
-            ai.step++;
+            r26Ai.step++;
         }
     },
 
     addAiRule: function(rule) {
-        ai.rules.push(rule);
+        r26Ai.rules.push(rule);
         for(var i in sim.things) {
-            ai.addAiToUnit(sim.things[i]);
+            r26Ai.addAiToUnit(sim.things[i]);
         }
     },
 
     clearAiRule:function() {
-        ai.rules = [];
+        r26Ai.rules = [];
     },
 
     setFieldRule: function(rule) {
         if(typeof rule === "function")
-            fieldRule = rule;
+            r26Ai.fieldRule = rule;
         else
-            fieldRule = null;
+            r26Ai.fieldRule = null;
     }
 }
 
