@@ -320,12 +320,28 @@ var movement = {
         return v2.sub(target, v2.scale(v2.norm(v2.sub(target, unit.pos, [0, 0])), radius - unit.radius), v2.create());
     },
 
-    avoidShots: function(unit, avoidDamage, bulletType) {
+    avoidShots: function(unit, avoidDamage, check) {
         if(!unit || !unit.unit) return;
 
         var unitClone = Object.assign(movement.dummyUnit, unit);
         sim.spacesRebuild();
-        if(ais.avoidShots(unitClone, avoidDamage, bulletType)) {
+
+        if(typeof check === "function") {
+            var bulletSpaces = sim.bulletSpaces[otherSide(unit.side)];
+            bulletSpaces.findInRange(unit.pos, unit.radius + 500, bullet => {
+                if(bullet && !check(bullet)) {
+                    var things = bulletSpaces.hash.get(bulletSpaces.key(bullet.pos));
+                    if(things) {
+                        var i = things.indexOf(bullet);
+                        if(i !== -1) {
+                            things.splice(i, 1);
+                        }
+                    }
+                }
+            });
+        }
+
+        if(ais.avoidShots(unitClone, avoidDamage, null)) {
             return unitClone.orders[0].dest;
         }
     }
