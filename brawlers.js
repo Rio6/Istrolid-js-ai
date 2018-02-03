@@ -27,8 +27,20 @@ r26Ai.addAiRule({
 
             order.unhold();
 
-            var spawn = order.findThings(tgt =>
-                tgt.spawn && tgt.side !== unit.side);
+            var pears = order.findThings(tgt =>
+                tgt.unit && tgt.spec.name === "PEAR" &&
+                tgt.owner === unit.owner && tgt.side === unit.side &&
+                v2.distance(tgt.pos, unit.pos) < 2000);
+
+            var spawn;
+            if(pears.length < 2) {
+                spawn = order.findThings(tgt =>
+                    tgt.spawn && tgt.side === unit.side);
+            } else {
+                spawn = order.findThings(tgt =>
+                    tgt.spawn && tgt.side !== unit.side);
+            }
+
             var point = order.findThings(tgt =>
                 tgt.commandPoint, spawn[0])[0];
             if(point) {
@@ -51,6 +63,7 @@ r26Ai.addAiRule({
                 tgt.owner === unit.owner && tgt.side === unit.side &&
                 tgt.spec.name === "BANANA")[0];
             if(banana) {
+                var bananaOrder = order.getUnitOrders(banana)[0];
                 var distBanana = v2.distance(unit.pos, banana.pos);
                 if(distBanana > 2000) {
                     order.follow(banana);
@@ -59,7 +72,8 @@ r26Ai.addAiRule({
 
                 var enemy = movement.spread(unit, order.findThings(tgt =>
                     tgt.unit && tgt.side === otherSide(unit.side) &&
-                    tgt.maxHP > 500));
+                    tgt.maxHP > 500 &&
+                    bananaOrder && tgt.id !== bananaOrder.targetId));
                 if(enemy) {
                     order.follow(enemy);
                     if(v2.distance(enemy.pos, banana.pos) < 2000) {
@@ -67,7 +81,6 @@ r26Ai.addAiRule({
                         return;
                     }
                 } else {
-                    var bananaOrder = banana.orders[0] || banana.preOrders[0];
                     if(bananaOrder) {
                         var dest;
                         if(bananaOrder.dest)
@@ -79,7 +92,8 @@ r26Ai.addAiRule({
                     }
                 }
 
-                if(v2.dot(unit.pos, banana.vel) > v2.dot(banana.pos, banana.vel)) {
+                if(banana.vel[0] === 0 && banana.vel[1] === 0 ||
+                    v2.dot(unit.pos, banana.vel) > v2.dot(banana.pos, banana.vel)) {
                     order.hold();
                 } else {
                     order.unhold();
@@ -126,6 +140,12 @@ r26Ai.addAiRule({
                 return;
             }
 
+            var avoidDest = movement.avoidShots(unit, 1);
+            if(avoidDest) {
+                order.move(avoidDest);
+                return;
+            }
+
             var points = order.findThings(target =>
                 target.commandPoint &&
                 (target.side !== unit.side || target.capping > 0) &&
@@ -167,6 +187,13 @@ r26Ai.addAiRule({
     ai: function(unit) {
 
         this.run = function() {
+
+            var avoidDest = movement.avoidShots(unit, 150);
+            if(avoidDest) {
+                order.move(avoidDest);
+                return;
+            }
+
             var banana = order.findThings(tgt =>
                 tgt.unit && tgt.side === unit.side &&
                 tgt.spec.name === "BANANA" && tgt.owner === commander.number,
@@ -187,11 +214,12 @@ r26Ai.addAiRule({
                 }
 
                 var offsetted = v2.add(v2.scale(v2.norm(banana.vel, v2.create()), 300), banana.pos);
-                if(v2.dot(unit.pos, banana.vel) > v2.dot(offsetted, banana.vel)) {
+                if(banana.vel[0] === 0 && banana.vel[1] === 0 ||
+                    v2.dot(unit.pos, banana.vel) > v2.dot(offsetted, banana.vel)) {
                     order.stop();
                     return;
                 } else {
-                    var bananaOrder = banana.orders[0] || banana.preOrders[0];
+                    var bananaOrder = order.getUnitOrders(banana)[0];
                     if(!enemy && bananaOrder) {
                         var dest;
                         if(bananaOrder.dest)
