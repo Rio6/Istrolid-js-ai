@@ -8,30 +8,29 @@ r26Ai.addAiRule({
     filter: unit => unit.spec.name === "BERRY",
     ai: function(unit) {
         this.run = function() {
-            /*
-            var enemy = movement.spread(unit, order.findThings(target =>
-                target.unit && target.side === otherSide(unit.side) &&
-                v2.distance(unit.pos, target.pos) < 1000));
-                */
-            var enemy = order.findThings(target =>
-                target.unit && target.side === otherSide(unit.side) &&
-                v2.distance(unit.pos, target.pos) < 1000)[0];
-            if(enemy) {
-                order.follow(enemy);
-                return;
-            }
 
-            var avoidDest = movement.avoidShots(unit, 1);
+            var avoidDest = movement.avoidShots(1);
             if(avoidDest) {
                 order.move(avoidDest);
                 return;
             }
 
-            var point = movement.spread(unit, order.findThings(target =>
+            /*
+            var enemy = movement.spread(unit, order.findThings(1000, target =>
+                target.unit && target.side === otherSide(unit.side)));
+                */
+            var enemy = order.findThings(1000, target =>
+                target.unit && target.side === otherSide(unit.side))[0];
+            if(enemy) {
+                order.follow(enemy);
+                return;
+            }
+
+            var point = movement.spread(order.findThings(-1, target =>
                 target.commandPoint &&
                 (target.side !== unit.side || target.capping > 0)));
-            if(point && point.commandPoint) {
-                var tgtPos = movement.inRange(unit, point.pos, point.radius);
+            if(point) {
+                var tgtPos = movement.inRange(point.pos, point.radius);
                 if(tgtPos) {
                     order.move(tgtPos);
                     return;
