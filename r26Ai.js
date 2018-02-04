@@ -1,7 +1,23 @@
 /*
  * This is an javascript api for istrolid ai
- * Look at the very last part of this file to figure out how to use
+ *
+ * How to use:
+ * Call r26Ai.addAiRule(rule) to add an ai rule
+ * A rule should have a function filter and a class ai with function run
+ * Filter function check whether this rule should be added to the unit
+ * class ai is instanized (if that's a word) for every units that matches
+ * the filter
+ *
+ * You call order.findThings() to get your targets
+ * and maybe use functions in movement to get where you want to go
+ * or just use the position of the targets you have
+ * to call functions in order to order
+ *
+ * Look at other js files for the actual use
  */
+
+//-----------------------------------------------------------------------------
+// Override and add/hook functions to istrolid
 
 var hook = hook || {
     process: Interpolator.prototype.process,
@@ -41,12 +57,22 @@ v2.distanceSqr = function(from, to) {
     return x * x + y * y;
 }
 
-// Turrets don't have tracking flag
-// Set it for them
-parts.SidewinderTurret.prototype.tracking = true;
-parts.MissileTurret.prototype.tracking = true;
+// Set bullet variables for them
+
+// Sidewinder and missile bullet has tracking already
+// but not turrets
+for(var i of ["SidewinderTurret", "MissileTurret"]) {
+    parts[i].prototype.tracking = true;
+}
+
+// Instant turrets have intant already
+// but not bullets
+for(var i of ["HeavyBeam", "PDLaserBullet", "LightBeam", "TeslaBolt"]) {
+    types[i].prototype.instant = true;
+}
 
 //-----------------------------------------------------------------------------
+// r26Ai add, stores and runs the ai rules
 
 var r26Ai = {
 
@@ -106,6 +132,20 @@ var r26Ai = {
         }
     },
 
+    /*
+     * Add an ai rule and also them check and add them to all currently
+     * fielded units
+     *
+     * rule: an object with function filter, class ai that has a function run
+     *
+     * Example:
+     *  {
+     *      filter: function(unit) {},
+     *      ai: function(unit) {
+     *          this.run = function() {};
+     *      }
+     *  }
+     */
     addAiRule: function(rule) {
         r26Ai.rules.push(rule);
         for(var i in sim.things) {
@@ -113,10 +153,12 @@ var r26Ai = {
         }
     },
 
+    // Clear ai rules
     clearAiRule:function() {
         r26Ai.rules = [];
     },
 
+    // Fielding rule <- still buggy
     setFieldRule: function(rule) {
         if(typeof rule === "function")
             r26Ai.fieldRule = rule;
@@ -126,12 +168,14 @@ var r26Ai = {
 }
 
 //-----------------------------------------------------------------------------
+// Basic unit orders
 
 var order = {
 
     oriSel: null,
     unit: null,
 
+    // Used in r26Ai to start order an unit
     startOrdering: function(unit) {
         if(!order.oriSel)
             order.oriSel = commander.selection;
@@ -139,6 +183,7 @@ var order = {
         battleMode.selectUnitsIds([unit.id]);
     },
 
+    // Used in r26Ai to stop ordering and restore selections
     stopOrdering: function() {
         if(order.oriSel)
             battleMode.selectUnits(order.oriSel);
@@ -146,11 +191,23 @@ var order = {
         order.unit = null;
     },
 
-    move: function(pos, append) {
-        if(v2.distance(order.unit.pos, pos) > 50)
-            battleMode.moveOrder([pos], append);
+    /*
+     * Move order
+     *
+     * dest: destination to move to
+     * append: whether to queue order
+     */
+    move: function(des, append) {
+        if(v2.distance(order.unit.pos, des) > 50)
+            battleMode.moveOrder([des], append);
     },
 
+    /*
+     * Follow order
+     *
+     * unit: unit to follow (can be anything actually, includes points, stones, bullets...
+     * append: whether to queue order
+     */
     follow: function(unit, append) {
         if(!unit) return;
 
@@ -162,34 +219,62 @@ var order = {
         battleMode.followOrder(unit, append);
     },
 
+    /*
+     * Stop order
+     * It's like pressing x in game
+     */
     stop: function() {
         if(order.getUnitOrders(order.unit).length > 0 ||
             order.unit.holdPosition)
             battleMode.stopOrder();
     },
 
+    /*
+     * Hold order
+     * It's like pressing z, but without toggling back to non-holding state
+     */
     hold: function() {
         if(!order.unit.holdPosition)
             battleMode.holdPositionOrder();
     },
 
+    /*
+     * Unhold order
+     * Send hold order if the unit is holding position
+     * So it unholds
+     */
     unhold: function() {
         if(order.unit.holdPosition)
             battleMode.holdPositionOrder();
     },
 
+    /*
+     * Self destruct
+     * Pretty useful right?
+     */
     destruct: function() {
         battleMode.selfDestructOrder();
     },
 
-    findThings: function(check, closeTo) {
+    /*
+     * Find everything you want that's sorted in distance
+     *
+     * range: find things within this range, if range <= 0, check everything
+     * check: function to check if this thing is what you want
+     * closeTo: sort using the distance between the target and closeTo
+     *      default is the current ordering unit,
+     *      or a unit with pos [0, 0] if not available
+     */
+    findThings: function(range, check, closeTo) {
         var rst = [];
         var unit = closeTo || order.unit || {pos: [0, 0]};
 
         if(typeof check === "function") {
             for(var i in sim.things) {
                 var thing = sim.things[i];
-                if(check(thing)) {
+                if((range <= 0 ||
+                    thing.pos && v2.distanceSqr(unit.pos, thing.pos) <= range * range) &&
+                    check(thing)) {
                     rst.push(thing);
                 }
             }
@@ -199,6 +284,13 @@ var order = {
         return rst;
     },
 
+    /*
+     * Get a unit's order
+     * Use this function because in local games, it's unit.orders
+     * but in multiplayer games, it's unit.preOrders
+     * Note that you can't get orders of units that are not yours in multiplayer
+     * (Used to be able to get them but not anymore)
+     */
     getUnitOrders(unit) {
         var unit = unit || order.unit;
         if(unit) {
@@ -212,8 +304,17 @@ var order = {
 }
 
 //-----------------------------------------------------------------------------
+// Funtions that let you check stuff
 
 var condition = {
+
+    /*
+     * If the position is in # dps area
+     *
+     * pos: position to check
+     * side: your side, it only checks enemys' dps not friends'
+     * dps: how much dps
+     */
     inRangeDps: function(pos, side, dps) {
         var totalDps = 0;
 
@@ -233,6 +334,14 @@ var condition = {
         return totalDps >= dps;
     },
 
+    /*
+     * If the position is in range of specific weapons
+     *
+     * pos: position to check
+     * side: your side, not checking weapons that are on the same side
+     * check: a function that check if this weapon is the weapon that
+     *  you want to test the range
+     */
     inRangeWeapon: function(pos, side, check) {
         if(typeof check !== "function") return false;
 
@@ -252,6 +361,11 @@ var condition = {
         return false;
     },
 
+    /*
+     * If this unit is busy going somewhere
+     *
+     * unit: unit to check
+     */
     isBusy: function(unit) {
         if(unit && unit.unit) {
             return unit.orders.length + unit.preOrders.length > 0;
@@ -261,29 +375,37 @@ var condition = {
 }
 
 //-----------------------------------------------------------------------------
+// Movements
 
 var movement = {
     dummyUnit: new types.Unit(),
 
-    spread: function(unit, targets) {
+    /*
+     * Return a target from targets so every target is
+     * spread to all units that calls this function and
+     * has the same spec and side as the current ordering unit
+     *
+     * targets: return 1 target out of the targets
+     */
+    spread: function(targets) {
 
-        if(!unit || !targets) return;
+        if(!order.unit || !targets) return;
 
         var rst = [];
         for(var i in targets) {
             var target = targets[i];
             if(i === "last" || !target) continue;
 
-            if(simpleEquals(unit.tgt, target))
+            if(simpleEquals(order.unit.tgt, target))
                 return target;
 
             var targeted = 0;
             for(var j in sim.things) {
                 var thing = sim.things[j];
                 if(thing.unit &&
-                    thing.id !== unit.id &&
-                    thing.side === unit.side &&
-                    simpleEquals(thing.spec, unit.spec) &&
+                    thing.id !== order.unit.id &&
+                    thing.side === order.unit.side &&
+                    simpleEquals(thing.spec, order.unit.spec) &&
                     simpleEquals(thing.tgt, target)) {
                     targeted++;
                 }
@@ -295,43 +417,58 @@ var movement = {
         }
         rst.sort((a, b) => a.targeted - b.targeted);
         if(rst[0]) {
-            unit.tgt = rst[0].target;
+            order.unit.tgt = rst[0].target;
             return rst[0].target;
         }
     },
 
-    inRange: function(unit, target, radius) {
+    /*
+     * Return a position that is inside radius of a position
+     * and is closest to the current ordering unit
+     *
+     * pos: position to go in range
+     * radius: the range radius
+     */
+    inRange: function(pos, radius) {
 
-        if(!unit || !target) return;
+        if(!order.unit || !pos) return;
 
-        var oriTgt = unit.pos;
+        var oriTgt = order.unit.pos;
 
-        var unitOrder = order.getUnitOrders(unit);
+        var unitOrder = order.getUnitOrders(order.unit);
         if(unitOrder) {
             if(unitOrder.type === "Move") {
                 oriTgt = unitOrder.dest;
             } else if(unitOrder.type === "Follow") {
-                var fTarget = sim.things[unitOrder.targetId];
+                var fTarget = sim.things[unitOrder.posId];
                 if(fTarget)
                     oriTgt = fTarget.pos;
             }
         }
 
-        if(v2.distanceSqr(oriTgt, target) < radius * radius)
+        if(v2.distanceSqr(oriTgt, pos) < radius * radius)
             return;
 
-        return v2.sub(target, v2.scale(v2.norm(v2.sub(target, unit.pos, [0, 0])), radius - unit.radius), v2.create());
+        return v2.sub(pos, v2.scale(v2.norm(v2.sub(pos, order.unit.pos, [0, 0])), radius - order.unit.radius), v2.create());
     },
 
-    avoidShots: function(unit, avoidDamage, check) {
-        if(!unit || !unit.unit) return;
+    /*
+     * Return a position that (try to) avoid all shots
+     * that matches check function
+     * This function uses istrolid's avoidShots function
+     *
+     * avoidDamage: damage to avoid
+     * check: a function that check if you want to avoid this bullet
+     */
+    avoidShots: function(avoidDamage, check) {
+        if(!order.unit) return;
 
-        var unitClone = Object.assign(movement.dummyUnit, unit);
+        var unitClone = Object.assign(movement.dummyUnit, order.unit);
         sim.spacesRebuild();
 
         if(typeof check === "function") {
-            var bulletSpaces = sim.bulletSpaces[otherSide(unit.side)];
-            bulletSpaces.findInRange(unit.pos, unit.radius + 500, bullet => {
+            var bulletSpaces = sim.bulletSpaces[otherSide(order.unit.side)];
+            bulletSpaces.findInRange(order.unit.pos, order.unit.radius + 500, bullet => {
                 if(bullet && !check(bullet)) {
                     var things = bulletSpaces.hash.get(bulletSpaces.key(bullet.pos));
                     if(things) {
