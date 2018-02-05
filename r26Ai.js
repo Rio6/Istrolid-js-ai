@@ -25,6 +25,7 @@ var hook = hook || {
 };
 
 Interpolator.prototype.process = function(data) {
+
     var newIds = [];
     for(var i in data.things) {
         for(var j in data.things[i]) {
@@ -34,7 +35,16 @@ Interpolator.prototype.process = function(data) {
             }
         }
     }
+
     var ret = hook.process.call(this, data);
+
+    for(var i in sim.things) {
+        var thing = sim.things[i];
+        if(thing.unit && thing.name !== thing.spec.name) {
+            // Set unit's name so we don't have to access it through spec
+            thing.name = thing.spec.name;
+        }
+    }
 
     for(var i in newIds) {
         var t = sim.things[newIds[i]];
@@ -82,6 +92,7 @@ var r26Ai = {
     step: 0,
 
     addAiToUnit: function(unit) {
+
         if(unit.owner !== commander.number)
             return;
 
@@ -224,7 +235,7 @@ var order = {
      * It's like pressing x in game
      */
     stop: function() {
-        if(order.getUnitOrders(order.unit).length > 0 ||
+        if(condition.isBusy(order.unit) ||
             order.unit.holdPosition)
             battleMode.stopOrder();
     },
