@@ -72,10 +72,16 @@ r26Ai.addAiRule({
                     return;
                 }
 
-                var enemy = movement.spread(order.findThings(-1, tgt =>
+                var enemies = order.findThings(-1, tgt =>
                     tgt.unit && condition.isEnemySide(tgt) &&
-                    tgt.maxHP > 500 &&
-                    bananaOrder && tgt.id !== bananaOrder.targetId));
+                    tgt.maxHP > 500);
+
+                if(enemies.length >= 3)
+                    enemies = enemies.filter(tgt => bananaOrder &&
+                        tgt.id !== bananaOrder.targetId);
+
+                var enemy = movement.spread(enemies);
+
                 if(enemy) {
                     order.follow(enemy);
                     if(v2.distance(enemy.pos, banana.pos) < 2000) {
