@@ -5,26 +5,25 @@
 r26Ai.clearAiRule();
 
 r26Ai.addAiRule({
-    filter: unit => unit.spec.name === "BERRY",
+    filter: unit => unit.name === "BERRY",
     ai: function(unit) {
         this.run = function() {
 
-            var avoidDest = movement.avoidShots(1);
+            var enemy = order.findThings(1000, tgt =>
+                tgt.unit && tgt.side === otherSide(unit.side))[0];
+            if(enemy) {
+                order.follow(enemy);
+                if(v2.distance(unit.pos, enemy.pos) < 550)
+                    return;
+            }
+
+            var avoidDest = movement.avoidShots(1, bullet => !bullet.instant);
             if(avoidDest) {
                 order.move(avoidDest);
                 return;
             }
 
-            /*
-            var enemy = movement.spread(unit, order.findThings(1000, target =>
-                target.unit && target.side === otherSide(unit.side)));
-                */
-            var enemy = order.findThings(1000, target =>
-                target.unit && target.side === otherSide(unit.side))[0];
-            if(enemy) {
-                order.follow(enemy);
-                return;
-            }
+            if(enemy) return;
 
             var point = movement.spread(order.findThings(-1, target =>
                 target.commandPoint &&
@@ -37,14 +36,10 @@ r26Ai.addAiRule({
                 }
             }
         }
+    },
+    build: function() {
+        build.buildUnit(100, 1);
     }
-});
-
-r26Ai.setFieldRule(unit => {
-    if(unit.name === "BERRY") {
-        return 100 - commander.buildQ.length;
-    }
-    return 0;
 });
 
 r26Ai.enabled = true;
