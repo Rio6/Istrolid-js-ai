@@ -97,9 +97,14 @@ var r26Ai = {
             return;
 
         for(var i in r26Ai.rules) {
+            var rule = r26Ai.rules[i];
             try {
-                if(typeof r26Ai.rules[i].filter === "function" && r26Ai.rules[i].filter(unit)) {
-                    unit.r26Ai = new r26Ai.rules[i].ai(unit);
+                if(rule &&
+                    typeof rule.filter === "function" &&
+                    typeof rule.ai === "function" &&
+                    rule.filter(unit)) {
+
+                    unit.r26Ai = new rule.ai(unit);
                 }
             } catch(e) {
                 console.error(e.stack);
@@ -125,20 +130,27 @@ var r26Ai = {
             order.stopOrdering();
 
             if(r26Ai.step % 60 === 0) {
-                try {
-                    if(typeof r26Ai.fieldRule === "function") {
-                        for(var i = 0; i < 10; i++) {
-                            var number = r26Ai.fieldRule(
-                                buildBar.specToUnit(commander.buildBar[i]),
-                                commander.buildQ.filter(x => x === i).length);
-                            if(number !== 0)
-                                network.send("buildRq", i, number);
+                for(var i in r26Ai.rules) {
+                    var rule = r26Ai.rules[i];
+                    for(var j = 0; j < commander.buildBar.length; j++) {
+                        var unit = buildBar.specToUnit(commander.buildBar[j]);
+                        try {
+                            if(unit && rule &&
+                                typeof rule.build === "function" &&
+                                typeof rule.filter === "function" &&
+                                rule.filter(unit)) {
+
+                                build.startBuilding(j);
+                                rule.build();
+                            }
+                        } catch(e) {
+                            console.error(e.stack);
                         }
                     }
-                } catch(e) {
-                    console.error(e.stack);
                 }
+                build.updateBuildQ();
             }
+
             r26Ai.step++;
         }
     },
@@ -175,6 +187,59 @@ var r26Ai = {
             r26Ai.fieldRule = rule;
         else
             r26Ai.fieldRule = null;
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Building functions
+var build = {
+
+    index: 0,
+    buildPriority: [],
+
+    startBuilding: function(index) {
+        build.index = index;
+    },
+
+    updateBuildQ: function() {
+        var buildQ = [];
+        build.buildPriority.sort((a, b) => a.priority - b.priority);
+        build.buildPriority.forEach(b => {
+            for(var i = 0; i < b.number; i++)
+                buildQ.push(b.index);
+        });
+
+        if(!simpleEquals(buildQ, commander.buildQ)) {
+            var chIndex = commander.buildQ.length;
+            for(var i in buildQ) {
+                if(commander.buildQ[i] !== buildQ[i]) {
+                    chIndex = i;
+                    break;
+                }
+            }
+
+            if(chIndex >= 0) {
+                for(var i = chIndex; i < commander.buildQ.length; i++) {
+                    network.send("buildRq", commander.buildQ[i], -1);
+                }
+
+                for(var i = chIndex; i < buildQ.length; i++) {
+                    network.send("buildRq", buildQ[i], 1);
+                }
+
+                commander.buildQ = buildQ;
+            }
+        }
+
+        build.buildPriority = [];
+    },
+
+    buildUnit(number, priority) {
+        build.buildPriority.push({
+            index: build.index,
+            number: number,
+            priority: priority
+        });
     }
 }
 
