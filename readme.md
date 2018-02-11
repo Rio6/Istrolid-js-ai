@@ -31,7 +31,7 @@ build units.
              order.move([0, 0]);
          };
      },
-     build: function() {
+     build: function(unit) {
          build.buildUnit(1, 1);
      }
  });
