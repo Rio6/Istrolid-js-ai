@@ -30,7 +30,7 @@
  *              order.move([0, 0]);
  *          };
  *      },
- *      build: function() {
+ *      build: function(unit) {
  *          build.buildUnit(1, 1);
  *      }
  *  });
@@ -163,7 +163,7 @@ var r26Ai = {
                                 rule.filter(unit)) {
 
                                 build.startBuilding(j);
-                                rule.build();
+                                rule.build(unit);
                             }
                         } catch(e) {
                             console.error(e.stack);
@@ -193,7 +193,7 @@ var r26Ai = {
      *              order.move([0, 0]);
      *          };
      *      },
-     *      build: function() {
+     *      build: function(unit) {
      *          build.buildUnit(1, 1);
      *      }
      *  });
@@ -485,6 +485,26 @@ var condition = {
             return unit.orders.length + unit.preOrders.length > 0;
         }
         return false;
+    },
+
+    /*
+     * If this unit is owned by commander and same side
+     *
+     * unit: unit to check
+     */
+    isMyUnit: function(unit) {
+        return unit &&
+            unit.side === commander.side &&
+            unit.owner === commander.number;
+    },
+
+    /*
+     * If this unit is on the enmy side
+     *
+     * unit: unit to check
+     */
+    isEnemySide: function(unit) {
+        return unit && unit.side === otherSide(commander.side);
     }
 }
 
