@@ -1,8 +1,8 @@
 /*
- * Use BANANA as main ship
- * 2 PEARs follow 1 BANANA
- * 3 LONGAN in front of 1 BANANA
- * 5 BERRY on field to cap
+ * Use BANANA as main ship (spinal plasma brawler)
+ * 2 PEAR follow 1 BANANA (phase brawler)
+ * 3 LYCHEE in front of 1 BANANA (tri-torp boat)
+ * 5 BERRY on field to cap (lb fighters)
  */
 
 r26Ai.clearAiRule();
@@ -14,7 +14,8 @@ r26Ai.addAiRule({
             var enemy = order.findThings(2000, tgt =>
                 tgt.unit && condition.isEnemySide(tgt) &&
                 tgt.cloak === 0 &&
-                tgt.cost > 500 && tgt.maxSpeed * 16 < 150)[0];
+                (tgt.cost > 500 || tgt.hp > 800)
+                && tgt.maxSpeed * 16 < 150)[0];
             if(enemy) {
                 if(v2.distance(unit.pos, enemy.pos) < 1270)
                     order.hold();
@@ -59,6 +60,8 @@ r26Ai.addAiRule({
 
     ai: function(unit) {
 
+        this.lastEnemyCount = 0;
+
         this.run = function() {
             var banana = order.findThings(-1, tgt =>
                 tgt.unit &&
@@ -76,13 +79,20 @@ r26Ai.addAiRule({
                     tgt.unit && condition.isEnemySide(tgt) &&
                     tgt.maxHP > 500);
 
-                if(enemies.length >= 3)
-                    enemies = enemies.filter(tgt => bananaOrder &&
-                        tgt.id !== bananaOrder.targetId);
+                if(enemies.length >= 3 && bananaOrder)
+                    enemies = enemies.filter(tgt => tgt.id !== bananaOrder.targetId);
 
-                var enemy = movement.spread(enemies);
+                if(enemies.length !== this.lastEnemyCount) {
+                    unit.tgt = null;
+                    this.lastEnemyCount = enemies.length;
+                }
+
+                var enemy = enemies[0];
 
                 if(enemy) {
+                    if(v2.distance(enemy.pos, unit.pos) > 1100)
+                        enemy = movement.spread(enemies);
+
                     order.follow(enemy);
                     if(v2.distance(enemy.pos, banana.pos) < 2000) {
                         order.unhold();
@@ -173,7 +183,7 @@ r26Ai.addAiRule({
                 target.commandPoint &&
                 (condition.isEnemySide(target) || target.capping > 0) &&
                 !(condition.inRangeWeapon(target.pos, unit.side,
-                    weapon => weapon.range > 800 && weapon.dps >= 55 &&
+                    weapon => weapon.range > 800 && weapon.damage >= 55 &&
                     (weapon.instant || weapon.tracking)) ||
                     condition.inRangeDps(target.pos, unit.side, unit.hp)));
 
@@ -204,17 +214,21 @@ r26Ai.addAiRule({
     build: function(unit) {
         var count = order.findThings(-1, tgt =>
             tgt.name === unit.name && condition.isMyUnit(tgt)).length;
-        build.buildUnit(5 - count, 1);
+        var want = order.findThings(-1, tgt =>
+            tgt.cost < 150 && condition.isEnemySide(tgt)).length;
+        if(want < 5) want = 5;
+
+        build.buildUnit(want - count, 1);
     }
 });
 
 r26Ai.addAiRule({
-    filter: unit => unit.name === "LONGAN",
+    filter: unit => unit.name === "LYCHEE",
     ai: function(unit) {
 
         this.run = function() {
 
-            var avoidDest = movement.avoidShots(60, bullet => bullet.hitPos);
+            var avoidDest = movement.avoidShots(150, bullet => bullet.hitPos);
             if(avoidDest) {
                 order.move(avoidDest);
                 return;
