@@ -41,6 +41,8 @@ r26Ai.addAiRule({
         }
     },
     build: function(unit) {
+        if(commander.money < 2334) return;
+
         var pearCount = order.findThings(-1,
             tgt => tgt.name === "PEAR" &&
             condition.isMyUnit(tgt)).length;
@@ -211,14 +213,24 @@ r26Ai.addAiRule({
             }
         }
     },
-    build: function(unit) {
-        var count = order.findThings(-1, tgt =>
-            tgt.name === unit.name && condition.isMyUnit(tgt)).length;
+    build: function b(unit) {
+
         var want = order.findThings(-1, tgt =>
             tgt.cost < 150 && condition.isEnemySide(tgt)).length;
+        var count = order.findThings(-1, tgt =>
+            tgt.name === unit.name && condition.isMyUnit(tgt)).length;
+
         if(want < 5) want = 5;
 
-        build.buildUnit(want - count, 1);
+        if(!b.last)
+            b.last = 1;
+
+        if(r26Ai.step < 200) {
+            build.buildUnit(10, 1);
+        } else if(count < want && r26Ai.step - b.last > 800) {
+            build.buildUnit(want, 1);
+            b.last = r26Ai.step;
+        }
     }
 });
 
