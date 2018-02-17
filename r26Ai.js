@@ -43,7 +43,7 @@
 
 var hook = hook || {
     process: Interpolator.prototype.process,
-    tick: BattleMode.prototype.tick
+//    tick: BattleMode.prototype.tick
 };
 
 Interpolator.prototype.process = function(data) {
@@ -78,10 +78,12 @@ Interpolator.prototype.process = function(data) {
     return ret;
 }
 
+/*
 BattleMode.prototype.tick = function() {
     r26Ai.tick();
     return hook.tick.call(this);
 }
+*/
 
 v2.distanceSqr = function(from, to) {
     var x = to[0] - from[0];
@@ -174,6 +176,8 @@ var r26Ai = {
             }
 
             r26Ai.step++;
+        } else {
+            r26Ai.step = 0;
         }
     },
 
@@ -620,3 +624,5 @@ var movement = {
         }
     }
 }
+
+r26Ai.timer = setInterval(r26Ai.tick, 16);
