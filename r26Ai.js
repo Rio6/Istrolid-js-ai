@@ -43,6 +43,7 @@
 
 var hook = hook || {
     process: Interpolator.prototype.process,
+    timer: setInterval(() => r26Ai.tick(), 16)
 //    tick: BattleMode.prototype.tick
 };
 
@@ -624,5 +625,3 @@ var movement = {
         }
     }
 }
-
-r26Ai.timer = setInterval(r26Ai.tick, 16);
