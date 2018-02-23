@@ -316,9 +316,9 @@ var order = {
      * dest: destination to move to
      * append: whether to queue order
      */
-    move: function(des, append) {
+    move: function(des) {
         if(v2.distance(order.unit.pos, des) > 50)
-            battleMode.moveOrder([des], append);
+            battleMode.moveOrder([des], false);
     },
 
     /*
@@ -327,7 +327,7 @@ var order = {
      * unit: unit to follow (can be anything actually, includes points, stones, bullets...
      * append: whether to queue order
      */
-    follow: function(unit, append) {
+    follow: function(unit) {
         if(!unit) return;
 
         var unitOrder = order.getUnitOrders(order.unit)[0];
@@ -335,7 +335,7 @@ var order = {
             unitOrder.type === "Follow" &&
             unitOrder.targetId === unit.id)
             return
-        battleMode.followOrder(unit, append);
+        battleMode.followOrder(unit, false);
     },
 
     /*
@@ -480,6 +480,18 @@ var condition = {
         return false;
     },
 
+    unitWeapons: function(unit, check) {
+        if(unit && unit.unit && typeof check === "function") {
+            for(var i in unit.weapons) {
+                var weapon = unit.weapons[i];
+
+                if(check(weapon))
+                    return true;
+            }
+        }
+        return false;
+    },
+
     /*
      * If this unit is busy going somewhere
      *
@@ -526,9 +538,11 @@ var movement = {
      *
      * targets: return 1 target out of the targets
      */
-    spread: function(targets) {
+    spread: function(targets, findNew) {
 
         if(!order.unit || !targets) return;
+
+        if(findNew) order.unit.tgt = null;
 
         var rst = [];
         for(var i in targets) {
