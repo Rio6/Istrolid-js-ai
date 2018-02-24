@@ -93,7 +93,7 @@ r26Ai.addAiRule({
                 var enemy = enemies[0];
 
                 if(enemy) {
-                    if(v2.distance(enemy.pos, unit.pos) > 1100) {
+                    if(v2.distance(enemy.pos, unit.pos) > 1500) {
 
                         if(enemies.length >= 3 && bananaOrder)
                             enemies = enemies.filter(tgt => tgt.id !== bananaOrder.targetId);
@@ -177,6 +177,8 @@ r26Ai.addAiRule({
 
             var enemy = order.findThings(2500, tgt =>
                 tgt.unit && //tgt.weaponDPS * 16 < unit.hp &&
+                !(condition.hasWeapon(tgt, w => w instanceof parts.FlackTurret)
+                    && tgt.energy > 3000) &&
                 condition.isEnemySide(tgt))[0];
             if(enemy) {
                 if(v2.distance(unit.pos, enemy.pos) < 1000) {
@@ -243,11 +245,15 @@ r26Ai.addAiRule({
                 }
             }
 
-            var enemy = order.findThings(-1, tgt =>
-                tgt.unit && 
-                condition.isEnemySide(tgt))[0];
-            if(enemy) {
-                order.follow(enemy);
+            var spawn = order.findThings(-1, tgt =>
+                    tgt.spawn && !condition.isEnemySide(tgt))[0];
+
+            var point = order.findThings(-1, tgt =>
+                tgt.commandPoint, spawn)[0];
+            if(point) {
+                var dest = movement.inRange(point.pos, point.radius);
+                if(dest)
+                    order.move(dest);
             }
         }
     },
@@ -272,7 +278,7 @@ r26Ai.addAiRule({
             var want = Math.min(Math.max(order.findThings(-1, tgt =>
                 tgt.cost < 150 && condition.isEnemySide(tgt)).length, 5), 10);
 
-            if(r26Ai.step - b.last > 800) {
+            if(r26Ai.step - b.last > 900) {
                 build.buildUnit(want, 1);
                 b.last = r26Ai.step;
             }
