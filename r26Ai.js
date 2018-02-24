@@ -480,7 +480,7 @@ var condition = {
         return false;
     },
 
-    unitWeapons: function(unit, check) {
+    hasWeapon: function(unit, check) {
         if(unit && unit.unit && typeof check === "function") {
             for(var i in unit.weapons) {
                 var weapon = unit.weapons[i];
