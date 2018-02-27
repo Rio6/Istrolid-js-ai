@@ -38,3 +38,42 @@ build units.
 ```
 
 Look at other js files for the actual use
+
+1. Install tampermonkey on your browser
+2. Click the tampermonkey icon and click "create an new script"
+3. Copy this code I asked for [here](https://stackoverflow.com/questions/48999415/simply-require-ing-a-3rd-party-library-results-in-javascript-errors/49000497?noredirect=1#comment85041490_49000497)
+```javascript
+// ==UserScript==
+// @name         Istrolid.com, use Istrolid Javascript AI API
+// @version      0.2
+// @match        *://www.istrolid.com/game.html*
+// @grant        none
+// ==/UserScript==
+
+/*-- Wait for game to load.  Try to find an event or node that signals
+    this, instead of one or two timers.
+*/
+var sfStrtTmr  = setInterval(() => {
+    if (typeof Interpolator  === "function") {
+        clearInterval (sfStrtTmr);
+        setTimeout (loadPoorScript, 1111);
+    }
+}, 333);
+
+function loadPoorScript(url){
+    var newNode     = document.createElement('script');
+        newNode.onload  = runScriptMain;
+    if (!url) {
+        newNode.src = "https://rawgit.com/Rio6/Istrolid-js-ai/master/r26Ai.js";
+    } else {
+        newNode.src = url;
+    }
+    document.body.appendChild(newNode);
+}
+
+function runScriptMain() {
+    //  ALL OF YOUR CODE GOES HERE.
+    console.log ("r26Ai: ",r26Ai);
+}
+```
+5. paste your code into the `runScriptMain()` function
