@@ -4,14 +4,12 @@ This is an javascript api for istrolid ai
 ## How to use
 Call `r26Ai.addAiRule(rule)` to add an ai rule.
 
-A rule should be an object that has a function `filter`, a
-class `ai` with a function `run` in it, and a function `build`.
+Rule is an object, with 3 properties, `filter`, `ai`, and `build`.
 
-`filter` check whether this rule should be added to the unit,
-class `ai` is instantized (new'd) and add to every units that matches
-the filter.
+`filter` is a function with the argument `unit`.
+It should return true if your rule should be applied to that unit.
 
-The `ai` object should have a run method. It is called every 30 ticks.
+`ai` is an object with a `run` function. The run function is called every 30 ticks.
 In `run`, you can call `order.findThings()` to get your targets
 and maybe use functions in `movement.*` to get where you want to go, or just
 use the position of the targets you have to call functions in `order.*`
