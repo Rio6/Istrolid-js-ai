@@ -608,7 +608,7 @@ var movement = {
     /*
      * Return a position that (try to) avoid all shots
      * that matches check function
-     * This function uses istrolid's avoidShots function
+     * It basically runs to the opposite direction of bullet
      *
      * avoidDamage: damage to avoid
      * check: a function that check if you want to avoid this bullet
@@ -616,26 +616,65 @@ var movement = {
     avoidShots: function(avoidDamage, check) {
         if(!order.unit) return;
 
+        var hitTime = function(unit, shot) {
+
+            /*
+             * a^2 + b^2 = c^2
+             * (a.x + t*v.x - b.x)^2 + (a.y + t*v.y - b.y)^2 = d^2
+             * t^2 * (v.x^2 + v.y^2) + t * (2*a.x*v.x - 2*b.x*v.x + 2*a.y*v.y - 2*b.y*v.y) + (a.x^2 - 2*a.x*b.x + b.x^2 + a.y^2 - 2*a.y*b.y + b.y^2 - d^2)
+             * --------------------------------
+             * a*t^2 + b*t + c = 0
+             * t = (-b +- sqrt(b^2 - 4*a*c)) / 2*a
+             */
+
+            var sqr = function(x) {
+                return x * x;
+            };
+
+            var v = {
+                x: shot.vel[0] - unit.vel[0],
+                y: shot.vel[1] - unit.vel[1]
+            };
+
+            var u = {
+                x: unit.pos[0],
+                y: unit.pos[1]
+            };
+
+            var s = {
+                x: shot.pos[0],
+                y: shot.pos[1]
+            };
+
+            var d = unit.radius + shot.radius;
+
+            var a = sqr(v.x) + sqr(v.y);
+            var b = 2 * s.x * v.x - 2 * u.x * v.x + 2 * s.y * v.y - 2 * u.y * v.y;
+            var c = sqr(s.x) - 2 * s.x * u.x + sqr(u.x) + sqr(s.y) - 2 * s.y * u.y + sqr(u.y) - sqr(d);
+
+            return (-b - Math.sqrt(sqr(b) - 4 * a * c)) / (2 * a);
+        };
+
         var unitClone = Object.assign(movement.dummyUnit, order.unit);
         sim.spacesRebuild();
 
+        var dest;
+
         if(typeof check === "function") {
             var bulletSpaces = sim.bulletSpaces[otherSide(order.unit.side)];
-            bulletSpaces.findInRange(order.unit.pos, order.unit.radius + 500, bullet => {
-                if(bullet && !check(bullet)) {
-                    var things = bulletSpaces.hash.get(bulletSpaces.key(bullet.pos));
-                    if(things) {
-                        var i = things.indexOf(bullet);
-                        if(i !== -1) {
-                            things.splice(i, 1);
-                        }
-                    }
+            bulletSpaces.findInRange(order.unit.pos, order.unit.radius + 1000, bullet => {
+                var time = hitTime(order.unit, bullet);
+                if(bullet && 
+                    (bullet.instant || bullet.hitPos ||
+                        (bullet.tracking && bullet.target && bullet.target.id === order.unit.id)
+                        || time > 0 && time < 48) &&
+                    check(bullet)) {
+
+                    dest = v2.add(v2.scale(v2.norm(v2.sub(order.unit.pos, bullet.pos, v2.create())), v2.mag(order.unit.vel) + 500), order.unit.pos);
                 }
             });
         }
 
-        if(ais.avoidShots(unitClone, avoidDamage, null)) {
-            return unitClone.orders[0].dest;
-        }
+        return dest;
     }
 }
