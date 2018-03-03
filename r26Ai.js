@@ -655,7 +655,6 @@ var movement = {
             return (-b - Math.sqrt(sqr(b) - 4 * a * c)) / (2 * a);
         };
 
-        var unitClone = Object.assign(movement.dummyUnit, order.unit);
         sim.spacesRebuild();
 
         var avoidCount = 0;
@@ -664,7 +663,7 @@ var movement = {
         if(typeof check === "function") {
             var bulletSpaces = sim.bulletSpaces[otherSide(order.unit.side)];
             bulletSpaces.findInRange(order.unit.pos, order.unit.radius + 1000, bullet => {
-                if(bullet && check(bullet)) {
+                if(bullet && bullet.damage >= avoidDamage && check(bullet)) {
                     if(bullet.instant) {
                     } else if(bullet.hitPos) {
                         v2.add(avoidPos, bullet.hitPos);
