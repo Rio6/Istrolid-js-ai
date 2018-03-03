@@ -277,11 +277,11 @@ var build = {
      * priority: build priority, lower number has higher priority
      *      default is 0;
      */
-    buildUnit(number, priority) {
+    buildUnit(number, priority = 0) {
         build.buildPriority.push({
             index: build.index,
             number: number,
-            priority: priority || 0
+            priority: priority
         });
     }
 }
@@ -658,23 +658,31 @@ var movement = {
         var unitClone = Object.assign(movement.dummyUnit, order.unit);
         sim.spacesRebuild();
 
-        var dest;
+        var avoidCount = 0;
+        var avoidPos = v2.create();
 
         if(typeof check === "function") {
             var bulletSpaces = sim.bulletSpaces[otherSide(order.unit.side)];
             bulletSpaces.findInRange(order.unit.pos, order.unit.radius + 1000, bullet => {
-                var time = hitTime(order.unit, bullet);
-                if(bullet && 
-                    (bullet.instant || bullet.hitPos ||
-                        (bullet.tracking && bullet.target && bullet.target.id === order.unit.id)
-                        || time > 0 && time < 48) &&
-                    check(bullet)) {
+                if(bullet && check(bullet)) {
+                    if(bullet.instant) {
+                    } else if(bullet.hitPos) {
+                        v2.add(avoidPos, bullet.hitPos);
+                        avoidCount++;
+                    } else {
+                        var time = hitTime(order.unit, bullet);
+                        if(bullet.tracking && bullet.target && bullet.target.id === order.unit.id
+                            || time > 0 && time < 48) {
 
-                    dest = v2.add(v2.scale(v2.norm(v2.sub(order.unit.pos, bullet.pos, v2.create())), v2.mag(order.unit.vel) + 500), order.unit.pos);
+                            v2.add(avoidPos, bullet.pos);
+                            avoidCount++;
+                        }
+                    }
                 }
             });
         }
 
-        return dest;
+        if(avoidCount > 0)
+            return v2.add(v2.scale(v2.norm(v2.sub(order.unit.pos, v2.scale(avoidPos, 1 / avoidCount), v2.create())), v2.mag(order.unit.vel) + 500), order.unit.pos);
     }
 }
