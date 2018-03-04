@@ -667,8 +667,11 @@ var movement = {
                 if(bullet && bullet.damage >= avoidDamage && check(bullet)) {
                     if(bullet.instant) {
                     } else if(bullet.hitPos) {
-                        v2.add(avoidPos, bullet.hitPos);
-                        avoidCount++;
+                        var time = hitTime(order.unit, {pos: bullet.hitPos, vel: [0, 0], radius: bullet.aoe + 100});
+                        if(time > 0 && time < 48) {
+                            v2.add(avoidPos, bullet.hitPos);
+                            avoidCount++;
+                        }
                     } else {
                         var time = hitTime(order.unit, bullet);
                         if(bullet.tracking && bullet.target && bullet.target.id === order.unit.id
