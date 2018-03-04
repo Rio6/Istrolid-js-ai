@@ -317,7 +317,9 @@ var order = {
      * append: whether to queue order
      */
     move: function(des) {
-        if(v2.distance(order.unit.pos, des) > 50)
+        var unitOrder = order.getUnitOrders(order.unit)[0];
+        if(!unitOrder || !simpleEquals(unitOrder.dest, des) &&
+            v2.distance(order.unit.pos, des) > 50)
             battleMode.moveOrder([des], false);
     },
 
@@ -331,8 +333,7 @@ var order = {
         if(!unit) return;
 
         var unitOrder = order.getUnitOrders(order.unit)[0];
-        if(unitOrder &&
-            unitOrder.type === "Follow" &&
+        if(unitOrder && unitOrder.type === "Follow" &&
             unitOrder.targetId === unit.id)
             return
         battleMode.followOrder(unit, false);
