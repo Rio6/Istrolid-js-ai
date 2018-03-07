@@ -538,6 +538,7 @@ var movement = {
      * has the same spec and side as the current ordering unit
      *
      * targets: return 1 target out of the targets
+     * findNew: whether to find a new target or not
      */
     spread: function(targets, findNew) {
 
