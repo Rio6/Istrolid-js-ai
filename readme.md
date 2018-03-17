@@ -15,8 +15,8 @@ and maybe use functions in `movement.*` to get where you want to go, or just
 use the position of the targets you have to call functions in `order.*`
 to give orders.
 
-`build` is called every 60 ticks, you can use `build.buildUnit()` to
-build units.
+`build` is called every 60 ticks, you can use `build.buildUnit(slot number, priority)` to
+field units.
 
 ## Example:
 ```javascript
