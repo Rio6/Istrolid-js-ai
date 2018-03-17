@@ -600,10 +600,40 @@ var movement = {
             }
         }
 
-        if(v2.distanceSqr(oriTgt, pos) < radius * radius)
+        if(v2.distance(oriTgt, pos) <= radius - order.unit.radius)
             return;
 
         return v2.sub(pos, v2.scale(v2.norm(v2.sub(pos, order.unit.pos, [0, 0])), radius - order.unit.radius), v2.create());
+    },
+
+    /*
+     * Return a position that is out side of the radius when
+     * the unit is within the distance
+     *
+     * pos: position to flee
+     * radius: the range radius
+     */
+    fleeRange: function(pos, radius) {
+
+        if(!order.unit || !pos) return;
+
+        var oriTgt = order.unit.pos;
+
+        var unitOrder = order.getUnitOrders(order.unit);
+        if(unitOrder) {
+            if(unitOrder.type === "Move") {
+                oriTgt = unitOrder.dest;
+            } else if(unitOrder.type === "Follow") {
+                var fTarget = sim.things[unitOrder.posId];
+                if(fTarget)
+                    oriTgt = fTarget.pos;
+            }
+        }
+
+        if(v2.distance(oriTgt, pos) >= radius + order.unit.radius)
+            return;
+
+        return v2.sub(pos, v2.scale(v2.norm(v2.sub(pos, order.unit.pos, [0, 0])), radius + order.unit.radius), v2.create());
     },
 
     /*
