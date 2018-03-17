@@ -282,7 +282,7 @@ r26Ai.addAiRule({
             b.last = 1;
 
         var count = order.findThings(-1, tgt =>
-            tgt.name === unit.name && condition.isMyUnit(tgt)).length;
+            tgt.name === unit.name && condition.isMyUnit(tgt) && tgt.energy > 300).length;
         var bananaCount = order.findThings(-1,
             tgt => tgt.name === "BANANA" &&
             condition.isMyUnit(tgt)).length;
@@ -290,7 +290,7 @@ r26Ai.addAiRule({
             tgt => tgt.name === "PEAR" &&
             condition.isMyUnit(tgt)).length;
 
-        if(bananaCount > 0 && (commander.money >= 676 && pearCount >= 2 || pearCount >= 1)) {
+        if(bananaCount > 0 && !(commander.money >= 676 && pearCount < 2 || pearCount < 1)) {
             var want = Math.min(Math.max(order.findThings(-1, tgt =>
                 tgt.cost < 150 && condition.isEnemySide(tgt)).length, 5), 10);
             var pointCount = order.findThings(-1, tgt =>
