@@ -15,7 +15,7 @@ and maybe use functions in `movement.*` to get where you want to go, or just
 use the position of the targets you have to call functions in `order.*`
 to give orders.
 
-`build` is called every 60 ticks, you can use `build.buildUnit(slot number, priority)` to
+`build` is called every 60 ticks, you can use `build.buildUnit(quantity, priority)` to
 field units.
 
 ## Example:
@@ -35,7 +35,45 @@ field units.
  });
 ```
 
-Look at other js files for the actual use
+## Documentation
+
+### `R26Ai`
+
+#### `r26Ai.addAiRule(info)`
+
+Adds an AI rule
+
+Info is an object with 3 properties
+
+1. `filter(unit)` Filter is a function that takes an argument unit. It should return true or false based on wheher you want to apply your rule to that unit
+
+2. `ai(unit)` AI is a function that contains the function `this.run()` Run is where you put your AI code
+
+3. `build(unit)` Build is where you put the code to spawn in units.
+
+#### `r26Ai.clearAiRule()`
+
+Deletes all the AI rules
+
+### `build`
+
+#### `build.buildUnit(amt, priority)`
+
+Fields `amt` number of units  if `priority` is high enough
+
+### `order`
+
+#### `order.startOrdering(unit)`
+
+All orders will be applied to the unit passed to `unit`
+
+#### `order.stopOrdering()`
+
+Orders will not be applied to the unit selected in `order.startOrdering(unit)` unless `order.startOrdering(unit)` gets called again
+
+#### `order.move(des)`
+
+# Installation
 
 1. Install tampermonkey on your browser
 2. Click the tampermonkey icon and click "create an new script"
