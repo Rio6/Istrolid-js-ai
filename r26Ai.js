@@ -214,14 +214,6 @@ var r26Ai = {
     clearAiRule:function() {
         r26Ai.rules = [];
     },
-
-    // Fielding rule <- still buggy
-    setFieldRule: function(rule) {
-        if(typeof rule === "function")
-            r26Ai.fieldRule = rule;
-        else
-            r26Ai.fieldRule = null;
-    }
 }
 
 //-----------------------------------------------------------------------------
