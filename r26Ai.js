@@ -112,13 +112,12 @@ for(var i of ["HeavyBeam", "PDLaserBullet", "LightBeam", "TeslaBolt"]) {
 var r26Ai = {
 
     rules: [],
-    fieldRule: null,
     enabled: false,
     step: 0,
 
     addAiToUnit: function(unit) {
 
-        if(unit.owner !== commander.number)
+        if(!commander || unit.owner !== commander.number)
             return;
 
         for(var i in r26Ai.rules) {
@@ -138,7 +137,7 @@ var r26Ai = {
     },
 
     tick: function() {
-        if(r26Ai.enabled && intp.state === "running" && commander.side !== "spectators") {
+        if(r26Ai.enabled && commander && intp.state === "running" && commander.side !== "spectators") {
             for(var i in sim.things) {
                 var thing = sim.things[i];
                 if(thing.r26Ai) {
@@ -205,8 +204,10 @@ var r26Ai = {
      */
     addAiRule: function(rule) {
         r26Ai.rules.push(rule);
-        for(var i in sim.things) {
-            r26Ai.addAiToUnit(sim.things[i]);
+        if(sim) {
+            for(var i in sim.things) {
+                r26Ai.addAiToUnit(sim.things[i]);
+            }
         }
     },
 
