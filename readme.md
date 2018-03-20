@@ -39,6 +39,10 @@ field units.
 
 ### `R26Ai`
 
+#### `r26Ai.enabled`
+
+Set this equal to true at the end if you want to use the AI
+
 #### `r26Ai.addAiRule(info)`
 
 Adds an AI rule
@@ -73,43 +77,15 @@ Orders will not be applied to the unit selected in `order.startOrdering(unit)` u
 
 #### `order.move(des)`
 
+Move a unit to pos, an array like: [x, y]
+
+[0, 0] moves unit to the center of the screen
+
 # Installation
 
-1. Install tampermonkey on your browser
-2. Click the tampermonkey icon and click "create an new script"
-3. Copy this code I asked for [here](https://stackoverflow.com/questions/48999415/simply-require-ing-a-3rd-party-library-results-in-javascript-errors/49000497?noredirect=1#comment85041490_49000497)
-```javascript
-// ==UserScript==
-// @name         Istrolid.com, use Istrolid Javascript AI API
-// @version      0.2
-// @match        *://www.istrolid.com/game.html*
-// @grant        none
-// ==/UserScript==
-
-/*-- Wait for game to load.  Try to find an event or node that signals
-    this, instead of one or two timers.
-*/
-var sfStrtTmr  = setInterval(() => {
-    if (typeof Interpolator  === "function") {
-        clearInterval (sfStrtTmr);
-        setTimeout (loadPoorScript, 1111);
-    }
-}, 333);
-
-function loadPoorScript(url){
-    var newNode     = document.createElement('script');
-        newNode.onload  = runScriptMain;
-    if (!url) {
-        newNode.src = "https://rawgit.com/Rio6/Istrolid-js-ai/master/r26Ai.js";
-    } else {
-        newNode.src = url;
-    }
-    document.body.appendChild(newNode);
-}
-
-function runScriptMain() {
-    //  ALL OF YOUR CODE GOES HERE.
-    console.log ("r26Ai: ",r26Ai);
-}
-```
-5. paste your code into the `runScriptMain()` function
+1. Get Istrolid on Steam
+2. Go to you steam folder, and go to steamapps/common/istrolid/resources
+3. Extract app.asar to a folder app however you like. I recomend using [this](https://github.com/electron/asar)
+4. Create 2 Javascript files in the JS folder.
+5. Copy the code from the r26Ai.js file into one, and reference both in game.html
+6. Write your AI in the other file!
