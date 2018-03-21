@@ -81,6 +81,42 @@ Move a unit to pos, an array like: [x, y]
 
 [0, 0] moves unit to the center of the screen
 
+#### `order.follow(thing)`
+
+Makes a ship follow another `thing`. `thing` can be any object, a command point, a ship, a bullet, etc.
+
+#### `order.stop()`
+
+Makes a unit stop. Same as pressing X in game
+
+#### `order.hold()`
+
+Same as pressing Z, but won't unhold.
+
+#### `order.unhold()`
+
+Opposite of `order.hold()`, It unholds but doesn't hold.
+
+#### `order.destruct()`
+
+Make a unit self destruct
+
+#### `order.findThings(range, unit, pos)`
+
+Get an array of units, that are within the range `range` and cause the function `unit` to return true when its passed into it.
+
+The ships are sorted by the distance to `pos`, an array. The default to `pos` is the unit commanding.
+
+#### `order.getUnitOrders(unit)`
+
+### `condition`
+
+#### `condition.inRangeDps(pos, side, dps)`
+
+Checks if a posistion, `pos` [x, y], is in a DPS zone of `dps` or higher
+
+`side` is whether its friendly or enemy dps
+
 # Installation
 
 1. Get Istrolid on Steam
