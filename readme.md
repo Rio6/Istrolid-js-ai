@@ -1,7 +1,17 @@
 # Istrolid Javascript AI API
-This is an javascript api for istrolid ai
+This is a library for coding Istrolid AI in Javascript
 
-## How to use
+## Contents
+
+[Crash Course](../readme.md#14)
+
+[Example]()
+
+[Documentation]()
+
+[Installation]()
+
+## Crash Course
 Call `r26Ai.addAiRule(rule)` to add an ai rule.
 
 Rule is an object, with 3 properties, `filter`, `ai`, and `build`.
@@ -37,6 +47,65 @@ field units.
 
 ## Documentation
 
+[`otherSide`]()
+
+[`commander.side`]()
+
+[`r26Ai`]()
+
+[`r26Ai.enabled`]()
+
+[`r26Ai.addAiRule`]()
+
+[`r26Ai.clearAiRule`]()
+
+[`build`]()
+
+[`build.buildUnit`]()
+
+[`order`]()
+
+[`order.move`]()
+
+[`order.follow`]()
+
+[`order.stop`]()
+
+[`order.hold`]()
+
+[`order.unhold`]()
+
+[`order.destruct`]()
+
+[`order.findThings`]()
+
+[`order.getUnitOrders`]()
+
+[`condition`]()
+
+[`condition.inRangeDps`]()
+
+[`condition.inRangeWeapon`]()
+
+[`condition.hasWeapon`]()
+
+[`condition.isBusy`]()
+
+[`condition.isMyUnit`]()
+
+[`condition.isEnemySide`]()
+
+[`movement`]()
+
+[`movement.spread`]()
+
+[`movement.inRange`]()
+
+[`movement.fleeRange`]()
+
+[`movement.avoidShots`]()
+
+
 #### `otherSide(side)`
 
 returns opposite side passed `side` (returns `"beta"` if passed `"alpha"`, and returns `"alpha"` if passed `"beta"`)
@@ -45,7 +114,7 @@ returns opposite side passed `side` (returns `"beta"` if passed `"alpha"`, and r
 
 variable for which side you are on in a game, defined to `"alpha"`, `"beta"`, `"spectators"`, or `"neutral"`
 
-### `R26Ai`
+### `r26Ai`
 
 Basic commands necessary to start work on AI
 
@@ -180,7 +249,7 @@ Returns closest position outside a circle to the unit
 `damage` The damage value of the shot to avoid
 `check` A function to check whether you want to avoid a shot
 
-# Installation
+## Installation
 
 1. Get Istrolid on Steam
 2. Go to you steam folder, and go to steamapps/common/istrolid/resources
