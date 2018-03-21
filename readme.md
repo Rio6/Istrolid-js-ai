@@ -3,7 +3,7 @@ This is a library for coding Istrolid AI in Javascript
 
 ## Contents
 
-[Crash Course](../readme.md#14)
+[Crash Course](../readme.md#L14)
 
 [Example]()
 
