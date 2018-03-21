@@ -37,7 +37,17 @@ field units.
 
 ## Documentation
 
+#### `otherSide(side)`
+
+returns opposite side passed `side` (returns `"beta"` if passed `"alpha"`, and returns `"alpha"` if passed `"beta"`)
+
+#### `commander.side`
+
+variable for which side you are on in a game, defined to `"alpha"`, `"beta"`, `"spectators"`, or `"neutral"`
+
 ### `R26Ai`
+
+Basic commands necessary to start work on AI
 
 #### `r26Ai.enabled`
 
@@ -61,19 +71,15 @@ Deletes all the AI rules
 
 ### `build`
 
+These functions are used for fielding units
+
 #### `build.buildUnit(amt, priority)`
 
 Fields `amt` number of units  if `priority` is high enough
 
 ### `order`
 
-#### `order.startOrdering(unit)`
-
-All orders will be applied to the unit passed to `unit`
-
-#### `order.stopOrdering()`
-
-Orders will not be applied to the unit selected in `order.startOrdering(unit)` unless `order.startOrdering(unit)` gets called again
+These functions execute orders
 
 #### `order.move(des)`
 
@@ -103,19 +109,76 @@ Make a unit self destruct
 
 #### `order.findThings(range, unit, pos)`
 
-Get an array of units, that are within the range `range` and cause the function `unit` to return true when its passed into it.
+Get an array of units, that are within the range `range` (pass -1 if you want to check everywhere) and cause the function `unit` to return true when its passed into it.
 
 The ships are sorted by the distance to `pos`, an array. The default to `pos` is the unit commanding.
 
 #### `order.getUnitOrders(unit)`
 
+Returns what order is being executed on the unit passed to `unit`
+
 ### `condition`
+
+These functions check if things are true or false
 
 #### `condition.inRangeDps(pos, side, dps)`
 
 Checks if a posistion, `pos` [x, y], is in a DPS zone of `dps` or higher
 
-`side` is whether its friendly or enemy dps
+`side` is whether its friendly or enemy dps. Either `"alpha"` or `"beta"`
+
+#### `condition.inRangeWeapon(pos, side, check)`
+
+`pos` Position to check (`[x, y]`)
+`side` Which side has the weapon
+`check` Function to return true if passed the weapon you want to check
+
+#### `condition.hasWeapon(unit, check)`
+
+`unit` Unit to check
+`check` Function to return true if passed the weapon you want to check
+
+#### `condition.isBusy(unit)`
+
+Checks whether unit `unit` is execution any orders
+
+#### `condition.isMyUnit(unit)`
+
+Checks whether unit `unit` is owned by you
+
+#### `condition.isEnemySide(unit)`
+
+Checks whether a unit is owned by the enemy
+
+### `movement`
+
+These function return `[x, y]` values to use in `order.move(pos)`
+
+#### `movement.spread(targets, findNew)`
+
+Returns a position from a list so that all units get different points.
+
+`targets` A list of targets to spread to
+`findNew`
+
+#### `movement.inRange(pos, rad)`
+
+Returns closest position within a circle to the unit
+
+`pos` Position of the circle `[x, y]`
+`rad` Radius of the circle
+
+#### `movement.fleeRange(pos, rad)`
+
+Returns closest position outside a circle to the unit
+
+`pos` Position of the circle `[x, y]`
+`rad` Radius of the circle
+
+#### `movement.avoidShots(damage, check)`
+
+`damage` The damage value of the shot to avoid
+`check` A function to check whether you want to avoid a shot
 
 # Installation
 
