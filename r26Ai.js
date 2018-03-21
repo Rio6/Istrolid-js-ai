@@ -426,6 +426,19 @@ var order = {
 // Funtions that let you check stuff
 
 var condition = {
+    
+    /*
+     * returns a function that checks if a unit has a given name.
+     * for use in things like filter, or order.findThings
+     *
+     * name: name to check
+     */
+    type: function(name) {
+      function ret(unit) {
+        return unit.name === name && unit.unit;
+      }
+      return ret;
+    },
 
     /*
      * If the position is in # dps area
