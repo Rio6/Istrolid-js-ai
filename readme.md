@@ -5,11 +5,11 @@ This is a library for coding Istrolid AI in Javascript
 
 [Crash Course](#crash-course)
 
-[Example]()
+[Example](#example)
 
-[Documentation]()
+[Documentation](#documentation)
 
-[Installation]()
+[Installation](#installation)
 
 ## Crash Course
 Call `r26Ai.addAiRule(rule)` to add an ai rule.
