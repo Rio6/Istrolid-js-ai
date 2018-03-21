@@ -112,13 +112,12 @@ for(var i of ["HeavyBeam", "PDLaserBullet", "LightBeam", "TeslaBolt"]) {
 var r26Ai = {
 
     rules: [],
-    fieldRule: null,
     enabled: false,
     step: 0,
 
     addAiToUnit: function(unit) {
 
-        if(unit.owner !== commander.number)
+        if(!commander || unit.owner !== commander.number)
             return;
 
         for(var i in r26Ai.rules) {
@@ -138,7 +137,7 @@ var r26Ai = {
     },
 
     tick: function() {
-        if(r26Ai.enabled && intp.state === "running" && commander.side !== "spectators") {
+        if(r26Ai.enabled && commander && intp.state === "running" && commander.side !== "spectators") {
             for(var i in sim.things) {
                 var thing = sim.things[i];
                 if(thing.r26Ai) {
@@ -205,8 +204,10 @@ var r26Ai = {
      */
     addAiRule: function(rule) {
         r26Ai.rules.push(rule);
-        for(var i in sim.things) {
-            r26Ai.addAiToUnit(sim.things[i]);
+        if(sim) {
+            for(var i in sim.things) {
+                r26Ai.addAiToUnit(sim.things[i]);
+            }
         }
     },
 
@@ -214,14 +215,6 @@ var r26Ai = {
     clearAiRule:function() {
         r26Ai.rules = [];
     },
-
-    // Fielding rule <- still buggy
-    setFieldRule: function(rule) {
-        if(typeof rule === "function")
-            r26Ai.fieldRule = rule;
-        else
-            r26Ai.fieldRule = null;
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -277,11 +270,11 @@ var build = {
      * priority: build priority, lower number has higher priority
      *      default is 0;
      */
-    buildUnit(number, priority) {
+    buildUnit(number, priority = 0) {
         build.buildPriority.push({
             index: build.index,
             number: number,
-            priority: priority || 0
+            priority: priority
         });
     }
 }
@@ -317,7 +310,9 @@ var order = {
      * append: whether to queue order
      */
     move: function(des) {
-        if(v2.distance(order.unit.pos, des) > 50)
+        var unitOrder = order.getUnitOrders(order.unit)[0];
+        if(!unitOrder || !simpleEquals(unitOrder.dest, des) &&
+            v2.distance(order.unit.pos, des) > 50)
             battleMode.moveOrder([des], false);
     },
 
@@ -331,8 +326,7 @@ var order = {
         if(!unit) return;
 
         var unitOrder = order.getUnitOrders(order.unit)[0];
-        if(unitOrder &&
-            unitOrder.type === "Follow" &&
+        if(unitOrder && unitOrder.type === "Follow" &&
             unitOrder.targetId === unit.id)
             return
         battleMode.followOrder(unit, false);
@@ -426,19 +420,6 @@ var order = {
 // Funtions that let you check stuff
 
 var condition = {
-    
-    /*
-     * returns a function that checks if a unit has a given name.
-     * for use in things like filter, or order.findThings
-     *
-     * name: name to check
-     */
-    type: function(name) {
-      function ret(unit) {
-        return unit.name === name && unit.unit;
-      }
-      return ret;
-    },
 
     /*
      * If the position is in # dps area
@@ -550,6 +531,7 @@ var movement = {
      * has the same spec and side as the current ordering unit
      *
      * targets: return 1 target out of the targets
+     * findNew: whether to find a new target or not
      */
     spread: function(targets, findNew) {
 
@@ -612,16 +594,46 @@ var movement = {
             }
         }
 
-        if(v2.distanceSqr(oriTgt, pos) < radius * radius)
+        if(v2.distance(oriTgt, pos) <= radius - order.unit.radius)
             return;
 
         return v2.sub(pos, v2.scale(v2.norm(v2.sub(pos, order.unit.pos, [0, 0])), radius - order.unit.radius), v2.create());
     },
 
     /*
+     * Return a position that is out side of the radius when
+     * the unit is within the distance
+     *
+     * pos: position to flee
+     * radius: the range radius
+     */
+    fleeRange: function(pos, radius) {
+
+        if(!order.unit || !pos) return;
+
+        var oriTgt = order.unit.pos;
+
+        var unitOrder = order.getUnitOrders(order.unit);
+        if(unitOrder) {
+            if(unitOrder.type === "Move") {
+                oriTgt = unitOrder.dest;
+            } else if(unitOrder.type === "Follow") {
+                var fTarget = sim.things[unitOrder.posId];
+                if(fTarget)
+                    oriTgt = fTarget.pos;
+            }
+        }
+
+        if(v2.distance(oriTgt, pos) >= radius + order.unit.radius)
+            return;
+
+        return v2.sub(pos, v2.scale(v2.norm(v2.sub(pos, order.unit.pos, [0, 0])), radius + order.unit.radius), v2.create());
+    },
+
+    /*
      * Return a position that (try to) avoid all shots
      * that matches check function
-     * This function uses istrolid's avoidShots function
+     * It basically runs to the opposite direction of bullet
      *
      * avoidDamage: damage to avoid
      * check: a function that check if you want to avoid this bullet
@@ -629,26 +641,75 @@ var movement = {
     avoidShots: function(avoidDamage, check) {
         if(!order.unit) return;
 
-        var unitClone = Object.assign(movement.dummyUnit, order.unit);
+        var hitTime = function(unit, shot) {
+
+            /*
+             * a^2 + b^2 = c^2
+             * (a.x + t*v.x - b.x)^2 + (a.y + t*v.y - b.y)^2 = d^2
+             * t^2 * (v.x^2 + v.y^2) + t * (2*a.x*v.x - 2*b.x*v.x + 2*a.y*v.y - 2*b.y*v.y) + (a.x^2 - 2*a.x*b.x + b.x^2 + a.y^2 - 2*a.y*b.y + b.y^2 - d^2)
+             * --------------------------------
+             * a*t^2 + b*t + c = 0
+             * t = (-b +- sqrt(b^2 - 4*a*c)) / 2*a
+             */
+
+            var sqr = function(x) {
+                return x * x;
+            };
+
+            var v = {
+                x: shot.vel[0] - unit.vel[0],
+                y: shot.vel[1] - unit.vel[1]
+            };
+
+            var u = {
+                x: unit.pos[0],
+                y: unit.pos[1]
+            };
+
+            var s = {
+                x: shot.pos[0],
+                y: shot.pos[1]
+            };
+
+            var d = unit.radius + shot.radius;
+
+            var a = sqr(v.x) + sqr(v.y);
+            var b = 2 * s.x * v.x - 2 * u.x * v.x + 2 * s.y * v.y - 2 * u.y * v.y;
+            var c = sqr(s.x) - 2 * s.x * u.x + sqr(u.x) + sqr(s.y) - 2 * s.y * u.y + sqr(u.y) - sqr(d);
+
+            return (-b - Math.sqrt(sqr(b) - 4 * a * c)) / (2 * a);
+        };
+
         sim.spacesRebuild();
+
+        var avoidCount = 0;
+        var avoidPos = v2.create();
 
         if(typeof check === "function") {
             var bulletSpaces = sim.bulletSpaces[otherSide(order.unit.side)];
-            bulletSpaces.findInRange(order.unit.pos, order.unit.radius + 500, bullet => {
-                if(bullet && !check(bullet)) {
-                    var things = bulletSpaces.hash.get(bulletSpaces.key(bullet.pos));
-                    if(things) {
-                        var i = things.indexOf(bullet);
-                        if(i !== -1) {
-                            things.splice(i, 1);
+            bulletSpaces.findInRange(order.unit.pos, order.unit.radius + 1000, bullet => {
+                if(bullet && bullet.damage >= avoidDamage && check(bullet)) {
+                    if(bullet.instant) {
+                    } else if(bullet.hitPos) {
+                        var time = hitTime(order.unit, {pos: bullet.hitPos, vel: [0, 0], radius: bullet.aoe + 100});
+                        if(time > 0 && time < 48) {
+                            v2.add(avoidPos, bullet.hitPos);
+                            avoidCount++;
+                        }
+                    } else {
+                        var time = hitTime(order.unit, bullet);
+                        if(bullet.tracking && bullet.target && bullet.target.id === order.unit.id
+                            || time > 0 && time < 48) {
+
+                            v2.add(avoidPos, bullet.pos);
+                            avoidCount++;
                         }
                     }
                 }
             });
         }
 
-        if(ais.avoidShots(unitClone, avoidDamage, null)) {
-            return unitClone.orders[0].dest;
-        }
+        if(avoidCount > 0)
+            return v2.add(v2.scale(v2.norm(v2.sub(order.unit.pos, v2.scale(avoidPos, 1 / avoidCount), v2.create())), v2.mag(order.unit.vel) + 500), order.unit.pos);
     }
 }
