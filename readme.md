@@ -228,7 +228,7 @@ These function return `[x, y]` values to use in `order.move(pos)`
 Returns a position from a list so that all units get different points.
 
 `targets` A list of targets to spread to
-`findNew`
+`findNew` Set this to true if you want to reassign a target every time the function is called
 
 #### `movement.inRange(pos, rad)`
 
