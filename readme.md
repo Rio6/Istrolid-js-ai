@@ -47,63 +47,63 @@ field units.
 
 ## Documentation
 
-[`otherSide`]()
+[`otherSide`](#othersideside)
 
-[`commander.side`]()
+[`commander.side`](#commanderside)
 
-[`r26Ai`]()
+[`r26Ai`](#r26ai)
 
-[`r26Ai.enabled`]()
+[`r26Ai.enabled`](#r26aienabled)
 
-[`r26Ai.addAiRule`]()
+[`r26Ai.addAiRule`](#r26aiaddairuleinfo)
 
-[`r26Ai.clearAiRule`]()
+[`r26Ai.clearAiRule`](#r26aiclearairule)
 
-[`build`]()
+[`build`](#build)
 
-[`build.buildUnit`]()
+[`build.buildUnit`](#buildbuildunitamt-priority)
 
-[`order`]()
+[`order`](#order)
 
-[`order.move`]()
+[`order.move`](#ordermovedes)
 
-[`order.follow`]()
+[`order.follow`](#orderfollowthing)
 
-[`order.stop`]()
+[`order.stop`](#orderstop)
 
-[`order.hold`]()
+[`order.hold`](#orderhold)
 
-[`order.unhold`]()
+[`order.unhold`](#orderunhold)
 
-[`order.destruct`]()
+[`order.destruct`](#orderdestruct)
 
-[`order.findThings`]()
+[`order.findThings`](#orderfindthingsrange-unit-pos)
 
-[`order.getUnitOrders`]()
+[`order.getUnitOrders`](#ordergetunitordersunit)
 
-[`condition`]()
+[`condition`](#condition)
 
-[`condition.inRangeDps`]()
+[`condition.inRangeDps`](#conditioninrangedpspos-side-dps)
 
-[`condition.inRangeWeapon`]()
+[`condition.inRangeWeapon`](#conditioninrangeweaponpos-side-check)
 
-[`condition.hasWeapon`]()
+[`condition.hasWeapon`](#conditionhasweaponunit-check)
 
-[`condition.isBusy`]()
+[`condition.isBusy`](#conditionisbusyunit)
 
-[`condition.isMyUnit`]()
+[`condition.isMyUnit`](#conditionismyunitunit)
 
-[`condition.isEnemySide`]()
+[`condition.isEnemySide`](#conditionisenemysideunit)
 
-[`movement`]()
+[`movement`](#movement)
 
-[`movement.spread`]()
+[`movement.spread`](#movementspreadtargets-findnew)
 
-[`movement.inRange`]()
+[`movement.inRange`](#movementinrangepos-rad)
 
-[`movement.fleeRange`]()
+[`movement.fleeRange`](#movementfleerangepos-rad)
 
-[`movement.avoidShots`]()
+[`movement.avoidShots`](#movementavoidshotsdamage-check)
 
 
 #### `otherSide(side)`
