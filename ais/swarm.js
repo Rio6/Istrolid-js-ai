@@ -13,7 +13,7 @@ r26Ai.addAiRule({
                 tgt.unit && tgt.side === otherSide(unit.side))[0];
             if(enemy) {
                 order.follow(enemy);
-                if(v2.distance(unit.pos, enemy.pos) < 550)
+                if(v2.distance(unit.pos, enemy.pos) < 1200)
                     return;
             }
 

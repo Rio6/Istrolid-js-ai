@@ -70,7 +70,7 @@ r26Ai.addAiRule({
         if(bananaCount > 0 && bananaCount * 2 <= pearCount)
             build.buildUnit(1, 5);
         else
-            build.buildUnit(1 - bananaCount, 2);
+            build.fieldUnit(1, 2);
     }
 });
 
@@ -159,14 +159,11 @@ r26Ai.addAiRule({
         }
     },
     build: function(unit) {
-        var pearCount = order.findThings(-1,
-            tgt => tgt.name === "PEAR" &&
-            condition.isMyUnit(tgt)).length;
         var bananaCount = order.findThings(-1,
             tgt => tgt.name === "BANANA" &&
             condition.isMyUnit(tgt)).length;
 
-        build.buildUnit(bananaCount * 2 - pearCount, 2);
+        build.fieldUnit(bananaCount * 2, 2);
     }
 });
 
@@ -301,7 +298,7 @@ r26Ai.addAiRule({
                 b.last = r26Ai.step;
             }
         } else {
-            build.buildUnit(5 - count, 1);
+            build.fieldUnit(5, 1);
         }
     }
 });
@@ -375,12 +372,10 @@ r26Ai.addAiRule({
         }
     },
     build: function(unit) {
-        var count = order.findThings(-1, tgt => tgt.name === unit.name &&
-            condition.isMyUnit(tgt)).length;
         var bananaCount = order.findThings(-1,
             tgt => tgt.name === "BANANA" &&
             condition.isMyUnit(tgt)).length;
-        build.buildUnit(bananaCount * 3 - count, 4);
+        build.fieldUnit(bananaCount * 3, 4);
     }
 });
 
