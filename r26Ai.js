@@ -164,7 +164,7 @@ var r26Ai = {
                                 typeof rule.filter === "function" &&
                                 rule.filter(unit)) {
 
-                                build.startBuilding(j);
+                                build.startBuilding(j, rule.filter);
                                 rule.build(unit);
                             }
                         } catch(e) {
@@ -222,45 +222,70 @@ var r26Ai = {
 var build = {
 
     index: 0,
+    filter: null,
     buildPriority: [],
 
     // Used in r26Ai to start recording build orders on a slot
-    startBuilding: function(index) {
+    startBuilding: function(index, filter) {
         build.index = index;
+        build.filter = filter;
     },
 
     // Used in r26Ai to sort out priorities and send out build orders
     updateBuildQ: function() {
         var buildQ = [];
-        build.buildPriority.sort((a, b) => a.priority - b.priority);
-        build.buildPriority.forEach(b => {
+
+        build.buildPriority.sort((a, b) => a.priority - b.priority).forEach(b => {
             for(var i = 0; i < b.number; i++)
                 buildQ.push(b.index);
         });
 
         if(!simpleEquals(buildQ, commander.buildQ)) {
+
             var chIndex = commander.buildQ.length;
-            for(var i in buildQ) {
+            for(var i = 0; i < Math.max(buildQ.length, commander.buildQ.length); i++) {
                 if(commander.buildQ[i] !== buildQ[i]) {
                     chIndex = i;
                     break;
                 }
             }
 
-            if(chIndex >= 0) {
-                for(var i = chIndex; i < commander.buildQ.length; i++) {
-                    network.send("buildRq", commander.buildQ[i], -1);
-                }
-
-                for(var i = chIndex; i < buildQ.length; i++) {
-                    network.send("buildRq", buildQ[i], 1);
-                }
-
-                commander.buildQ = buildQ;
+            for(var i = chIndex; i < commander.buildQ.length; i++) {
+                network.send("buildRq", commander.buildQ[i], -1);
             }
+
+            for(var i = chIndex; i < buildQ.length; i++) {
+                network.send("buildRq", buildQ[i], 1);
+            }
+
+            commander.buildQ = buildQ;
         }
 
         build.buildPriority = [];
+    },
+
+    /*
+     * Build units so there are `number` of units on field
+     *
+     * number: how many to field
+     * priority: build priority, lower number has higher priority
+     *      default is 0
+     */
+    fieldUnit: function(number, priority = 0) {
+        var buildNumber = number;
+
+        buildNumber -= order.findThings(-1, unit => condition.isMyUnit(unit) && build.filter(unit)).length;
+        build.buildPriority.forEach(p => {
+            if(p.index === build.index && p.priority <= priority) {
+                buildNumber -= p.number;
+            }
+        });
+
+        build.buildPriority.push({
+            index: build.index,
+            number: buildNumber,
+            priority: priority,
+        });
     },
 
     /*
@@ -270,7 +295,7 @@ var build = {
      * priority: build priority, lower number has higher priority
      *      default is 0;
      */
-    buildUnit(number, priority = 0) {
+    buildUnit: function(number, priority = 0) {
         build.buildPriority.push({
             index: build.index,
             number: number,
