@@ -271,7 +271,7 @@ var build = {
      * priority: build priority, lower number has higher priority
      *      default is 0
      */
-    fieldUnit: function(number, priority = 0) {
+    keepUnits: function(number, priority = 0) {
         var buildNumber = number;
 
         buildNumber -= order.findThings(-1, unit => condition.isMyUnit(unit) && build.filter(unit)).length;
