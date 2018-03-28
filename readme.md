@@ -75,7 +75,7 @@ r26Ai.addAiRule({
 ### Use a browser monkey
 1. Get [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) or [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) or a similiar addon
 2. Use it to run `r26Ai.js` and your ai file on [http://istrolid.com/game.html](http://istrolid.com/game.html)
-### Direct install on steam
+### Install on steam version
 1. Get Istrolid on Steam
 2. Go to you steam folder, and go to `steamapps/common/istrolid/resources`
 3. Extract app.asar to a folder app. I recommend using [this](https://github.com/electron/asar)
@@ -85,6 +85,7 @@ r26Ai.addAiRule({
 7. Write your AI in the second file!
 ### Use a loader
 A mod loader keeps your api up to date. You might not want that, though. Because updating breaks ai a lot.
+
 Replace r26Ai.js with a mod loader, and it loads the newest commit from github.
 
 A simple mod loader by nexec:
