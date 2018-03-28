@@ -72,6 +72,10 @@ r26Ai.addAiRule({
 ```
 
 ## Installation
+### Copy + paste
+1. Open developer console (press f12 on browser, f10 in steam version)
+2. Copy whole content of `r26Ai.js` and paste it into the console
+3. Copy your ai code into the console
 ### Use a browser monkey
 1. Get [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) or [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) or a similiar addon
 2. Use it to run `r26Ai.js` and your ai file on [http://istrolid.com/game.html](http://istrolid.com/game.html)
