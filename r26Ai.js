@@ -274,7 +274,7 @@ var build = {
     keepUnits: function(number, priority = 0) {
         var buildNumber = number;
 
-        buildNumber -= order.findThings(-1, unit => condition.isMyUnit(unit) && build.filter(unit)).length;
+        buildNumber -= order.findThings(unit => condition.isMyUnit(unit) && build.filter(unit)).length;
         build.buildPriority.forEach(p => {
             if(p.index === build.index && p.priority <= priority) {
                 buildNumber -= p.number;
@@ -295,7 +295,7 @@ var build = {
      * priority: build priority, lower number has higher priority
      *      default is 0;
      */
-    buildUnit: function(number, priority = 0) {
+    buildUnits: function(number, priority = 0) {
         build.buildPriority.push({
             index: build.index,
             number: number,
@@ -397,28 +397,28 @@ var order = {
     /*
      * Find everything you want that's sorted in distance
      *
-     * range: find things within this range, if range <= 0, check everything
      * check: function to check if this thing is what you want
+     * range: find things within this range, if range <= 0, check everything
      * closeTo: sort using the distance between the target and closeTo
-     *      default is the current ordering unit,
-     *      or a unit with pos [0, 0] if not available
+     *      default is the current ordering unit position,
+     *      or [0, 0] if not available
      */
-    findThings: function(range, check, closeTo) {
+    findThings: function(check, range = -1, closeTo) {
         var rst = [];
-        var unit = closeTo || order.unit || {pos: [0, 0]};
+        var point = closeTo || (order.unit ? order.unit.pos : [0, 0]);
 
         if(typeof check === "function") {
             for(var i in sim.things) {
                 var thing = sim.things[i];
                 if((range <= 0 ||
-                    thing.pos && v2.distanceSqr(unit.pos, thing.pos) <= range * range) &&
+                    thing.pos && v2.distanceSqr(thing.pos, point) <= range * range) &&
                     check(thing)) {
                     rst.push(thing);
                 }
             }
         }
         rst.sort((a, b) =>
-            v2.distanceSqr(a.pos, unit.pos) - v2.distanceSqr(b.pos, unit.pos));
+            v2.distanceSqr(a.pos, point) - v2.distanceSqr(b.pos, point));
         return rst;
     },
 
