@@ -29,31 +29,72 @@ to give orders.
 field units.
 
 ## Example:
+A swarm ai
 ```javascript
- r26Ai.clearAiRule();
+// Clear the rule in case there are rules already loaded
+// so the rules are not conflicting
+r26Ai.clearAiRule();
 
- r26Ai.addAiRule({
-     filter: function(unit) {
-         return unit.name === "BANANA";
-     },
-     ai: function(unit) {
-         this.run = function() {
-             order.move([0, 0]);
-         };
-     },
-     build: function(unit) {
-         build.buildUnit(1, 1);
-     }
- });
- 
- r26Ai.enabled = true;
+r26Ai.addAiRule({
+    filter: unit => unit.name === "BERRY", // You can also use other properties, like unit.spec
+    ai: function(unit) {
+        // This is the ai code
+        this.run = function() {
+
+            // Get an enemy unit
+            var enemy = order.findThings(
+                    tgt => tgt.unit && condition.isEnemySide(tgt),
+                1000)[0];
+            if(enemy) {
+                // Follow command on enemy = target
+                order.follow(enemy);
+                // Return so actions after don't run
+                return;
+            }
+
+            // order.findThings() returns an array of points here
+            // Pass it to movement.spread, it returns 1 of the point
+            var point = movement.spread(order.findThings(target =>
+                target.commandPoint &&
+                (target.side !== unit.side || target.capping > 0)));
+            if(point) {
+                // Move to the point
+                order.move(point.pos);
+                return;
+            }
+        }
+    },
+    // This is the spawning code
+    build: function() {
+        build.keepUnits(100, 1); // Keep 100 units on field
+    }
+});
 ```
 
 ## Installation
-
+### Use a browser monkey
+1. Get [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) or [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) or a similiar addon
+2. Use it to run `r26Ai.js` and your ai file on [http://istrolid.com/game.html](http://istrolid.com/game.html)
+### Direct install on steam
 1. Get Istrolid on Steam
-2. Go to you steam folder, and go to steamapps/common/istrolid/resources
-3. Extract app.asar to a folder app however you like. I recomend using [this](https://github.com/electron/asar)
-4. Create 2 Javascript files in the JS folder.
-5. Copy the code from the r26Ai.js file into one, and reference both in game.html
-6. Write your AI in the other file!
+2. Go to you steam folder, and go to `steamapps/common/istrolid/resources`
+3. Extract app.asar to a folder app. I recommend using [this](https://github.com/electron/asar)
+4. put `r26Ai.js` inside `js` folder
+5. Create another javascript file in the folder
+6. Reference both files in `game.html`
+7. Write your AI in the second file!
+### Use a loader
+A mod loader keeps your api up to date. You might not want that, though. Because updating breaks ai a lot.
+Replace r26Ai.js with a mod loader, and it loads the newest commit from github.
+
+A simple mod loader by nexec:
+```javascript
+httpGet(theUrl) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false );
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
+
+eval(httpGet("https://raw.githubusercontent.com/Rio6/Istrolid-js-ai/master/r26Ai.js"));
+```

@@ -31,7 +31,7 @@
  *          };
  *      },
  *      build: function(unit) {
- *          build.buildUnit(1, 1);
+ *          build.keepUnits(10, 1);
  *      }
  *  });
  *
@@ -198,7 +198,7 @@ var r26Ai = {
      *          };
      *      },
      *      build: function(unit) {
-     *          build.buildUnit(1, 1);
+     *          build.keepUnits(10, 1);
      *      }
      *  });
      */
