@@ -50,8 +50,8 @@ var hook = hook || {
 Interpolator.prototype.process = function(data) {
 
     var newIds = [];
-    for(var i in data.things) {
-        for(var j in data.things[i]) {
+    for(let i in data.things) {
+        for(let j in data.things[i]) {
             if(data.things[i][j][0] === "thingId" &&
                 !this.things[data.things[i][j][1]]) {
                 newIds.push(data.things[i][j][1]);
@@ -61,16 +61,16 @@ Interpolator.prototype.process = function(data) {
 
     var ret = hook.process.call(this, data);
 
-    for(var i in sim.things) {
-        var thing = sim.things[i];
+    for(let i in sim.things) {
+        let thing = sim.things[i];
         if(thing.unit && thing.name !== thing.spec.name) {
             // Set unit's name so we don't have to access it through spec
             thing.name = thing.spec.name;
         }
     }
 
-    for(var i in newIds) {
-        var t = sim.things[newIds[i]];
+    for(let i in newIds) {
+        let t = sim.things[newIds[i]];
         if(t) {
             r26Ai.addAiToUnit(t);
         }
@@ -96,13 +96,13 @@ v2.distanceSqr = function(from, to) {
 
 // Sidewinder and missile bullet has tracking already
 // but not turrets
-for(var i of ["SidewinderTurret", "MissileTurret"]) {
+for(let i of ["SidewinderTurret", "MissileTurret"]) {
     parts[i].prototype.tracking = true;
 }
 
 // Instant turrets have intant already
 // but not bullets
-for(var i of ["HeavyBeam", "PDLaserBullet", "LightBeam", "TeslaBolt"]) {
+for(let i of ["HeavyBeam", "PDLaserBullet", "LightBeam", "TeslaBolt"]) {
     types[i].prototype.instant = true;
 }
 
@@ -120,8 +120,8 @@ var r26Ai = {
         if(!commander || unit.owner !== commander.number)
             return;
 
-        for(var i in r26Ai.rules) {
-            var rule = r26Ai.rules[i];
+        for(let i in r26Ai.rules) {
+            let rule = r26Ai.rules[i];
             try {
                 if(rule &&
                     typeof rule.filter === "function" &&
@@ -138,8 +138,8 @@ var r26Ai = {
 
     tick: function() {
         if(r26Ai.enabled && commander && intp.state === "running" && commander.side !== "spectators") {
-            for(var i in sim.things) {
-                var thing = sim.things[i];
+            for(let i in sim.things) {
+                let thing = sim.things[i];
                 if(thing.r26Ai) {
                     if((r26Ai.step + thing.id) % 30 === 0) {
                         order.startOrdering(thing);
@@ -154,10 +154,10 @@ var r26Ai = {
             order.stopOrdering();
 
             if(r26Ai.step % 60 === 0) {
-                for(var i in r26Ai.rules) {
-                    var rule = r26Ai.rules[i];
-                    for(var j = 0; j < commander.buildBar.length; j++) {
-                        var unit = buildBar.specToUnit(commander.buildBar[j]);
+                for(let i in r26Ai.rules) {
+                    let rule = r26Ai.rules[i];
+                    for(let j = 0; j < commander.buildBar.length; j++) {
+                        let unit = buildBar.specToUnit(commander.buildBar[j]);
                         try {
                             if(unit && rule &&
                                 typeof rule.build === "function" &&
@@ -205,7 +205,7 @@ var r26Ai = {
     addAiRule: function(rule) {
         r26Ai.rules.push(rule);
         if(sim) {
-            for(var i in sim.things) {
+            for(let i in sim.things) {
                 r26Ai.addAiToUnit(sim.things[i]);
             }
         }
@@ -236,25 +236,25 @@ var build = {
         var buildQ = [];
 
         build.buildPriority.sort((a, b) => a.priority - b.priority).forEach(b => {
-            for(var i = 0; i < b.number; i++)
+            for(let i = 0; i < b.number; i++)
                 buildQ.push(b.index);
         });
 
         if(!simpleEquals(buildQ, commander.buildQ)) {
 
-            var chIndex = commander.buildQ.length;
-            for(var i = 0; i < Math.max(buildQ.length, commander.buildQ.length); i++) {
+            let chIndex = commander.buildQ.length;
+            for(let i = 0; i < Math.max(buildQ.length, commander.buildQ.length); i++) {
                 if(commander.buildQ[i] !== buildQ[i]) {
                     chIndex = i;
                     break;
                 }
             }
 
-            for(var i = chIndex; i < commander.buildQ.length; i++) {
+            for(let i = chIndex; i < commander.buildQ.length; i++) {
                 network.send("buildRq", commander.buildQ[i], -1);
             }
 
-            for(var i = chIndex; i < buildQ.length; i++) {
+            for(let i = chIndex; i < buildQ.length; i++) {
                 network.send("buildRq", buildQ[i], 1);
             }
 
@@ -409,8 +409,8 @@ var order = {
         var point = closeTo || (order.unit ? order.unit.pos : [0, 0]);
 
         if(typeof check === "function") {
-            for(var i in sim.things) {
-                var thing = sim.things[i];
+            for(let i in sim.things) {
+                let thing = sim.things[i];
                 if((range <= 0 ||
                     thing.pos && v2.distanceSqr(thing.pos, point) <= range * range) &&
                     check(thing)) {
@@ -457,14 +457,14 @@ var condition = {
     inRangeDps: function(pos, side, dps) {
         var totalDps = 0;
 
-        for(var i in sim.things) {
-            var target = sim.things[i];
+        for(let i in sim.things) {
+            let target = sim.things[i];
             if(target.unit && target.side === otherSide(side)) {
-                for(var j in target.weapons) {
+                for(let j in target.weapons) {
                     if(j === "last") continue;
-                    var weapon = target.weapons[j];
+                    let weapon = target.weapons[j];
 
-                    var range = weapon.range;
+                    let range = weapon.range;
                     if(v2.distanceSqr(pos, weapon.worldPos) <= range * range)
                         totalDps += weapon.dps * 16;
                 }
@@ -484,14 +484,14 @@ var condition = {
     inRangeWeapon: function(pos, side, check) {
         if(typeof check !== "function") return false;
 
-        for(var i in sim.things) {
-            var target = sim.things[i];
+        for(let i in sim.things) {
+            let target = sim.things[i];
             if(target.unit && target.side === otherSide(side)) {
-                for(var j in target.weapons) {
+                for(let j in target.weapons) {
                     if(j === "last") continue;
-                    var weapon = target.weapons[j];
+                    let weapon = target.weapons[j];
 
-                    var range = weapon.range;
+                    let range = weapon.range;
                     if(v2.distanceSqr(pos, weapon.worldPos) <= range * range && check(weapon))
                         return true;
                 }
@@ -502,8 +502,8 @@ var condition = {
 
     hasWeapon: function(unit, check) {
         if(unit && unit.unit && typeof check === "function") {
-            for(var i in unit.weapons) {
-                var weapon = unit.weapons[i];
+            for(let i in unit.weapons) {
+                let weapon = unit.weapons[i];
 
                 if(check(weapon))
                     return true;
@@ -563,13 +563,13 @@ var movement = {
         if(!order.unit || !targets) return;
 
         var rst = [];
-        for(var i in targets) {
-            var target = targets[i];
+        for(let i in targets) {
+            let target = targets[i];
             if(i === "last" || !target) continue;
 
-            var targeted = 0;
-            for(var j in sim.things) {
-                var thing = sim.things[j];
+            let targeted = 0;
+            for(let j in sim.things) {
+                let thing = sim.things[j];
                 if(thing.unit &&
                     thing.id !== order.unit.id &&
                     thing.owner === order.unit.owner &&
@@ -622,7 +622,7 @@ var movement = {
             if(unitOrder.type === "Move") {
                 oriTgt = unitOrder.dest;
             } else if(unitOrder.type === "Follow") {
-                var fTarget = sim.things[unitOrder.posId];
+                let fTarget = sim.things[unitOrder.posId];
                 if(fTarget)
                     oriTgt = fTarget.pos;
             }
@@ -652,7 +652,7 @@ var movement = {
             if(unitOrder.type === "Move") {
                 oriTgt = unitOrder.dest;
             } else if(unitOrder.type === "Follow") {
-                var fTarget = sim.things[unitOrder.posId];
+                let fTarget = sim.things[unitOrder.posId];
                 if(fTarget)
                     oriTgt = fTarget.pos;
             }
@@ -720,18 +720,18 @@ var movement = {
         var avoidPos = v2.create();
 
         if(typeof check === "function") {
-            var bulletSpaces = sim.bulletSpaces[otherSide(order.unit.side)];
+            let bulletSpaces = sim.bulletSpaces[otherSide(order.unit.side)];
             bulletSpaces.findInRange(order.unit.pos, order.unit.radius + 1000, bullet => {
                 if(bullet && bullet.damage >= avoidDamage && check(bullet)) {
                     if(bullet.instant) {
                     } else if(bullet.hitPos) {
-                        var time = hitTime(order.unit, {pos: bullet.hitPos, vel: [0, 0], radius: bullet.aoe + 100});
+                        let time = hitTime(order.unit, {pos: bullet.hitPos, vel: [0, 0], radius: bullet.aoe + 100});
                         if(time > 0 && time < 48) {
                             v2.add(avoidPos, bullet.hitPos);
                             avoidCount++;
                         }
                     } else {
-                        var time = hitTime(order.unit, bullet);
+                        let time = hitTime(order.unit, bullet);
                         if(bullet.tracking && bullet.target && bullet.target.id === order.unit.id
                             || time > 0 && time < 48) {
 
