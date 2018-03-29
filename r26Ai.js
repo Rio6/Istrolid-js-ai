@@ -557,42 +557,50 @@ var movement = {
      * has the same spec and side as the current ordering unit
      *
      * targets: return 1 target out of the targets
-     * findNew: whether to find a new target or not
      */
-    spread: function(targets, findNew) {
+    spread: function(targets) {
 
         if(!order.unit || !targets) return;
-
-        if(findNew) order.unit.tgt = null;
 
         var rst = [];
         for(var i in targets) {
             var target = targets[i];
             if(i === "last" || !target) continue;
 
-            if(simpleEquals(order.unit.tgt, target))
-                return target;
-
             var targeted = 0;
             for(var j in sim.things) {
                 var thing = sim.things[j];
                 if(thing.unit &&
                     thing.id !== order.unit.id &&
+                    thing.owner === order.unit.owner &&
                     thing.side === order.unit.side &&
                     simpleEquals(thing.spec, order.unit.spec) &&
                     simpleEquals(thing.tgt, target)) {
                     targeted++;
                 }
             }
+
+            if(simpleEquals(order.unit.tgt, target)) {
+                var unitTgt = {
+                    target: target,
+                    targeted: targeted,
+                };
+            }
+
             rst.push({
                 target: target,
                 targeted: targeted
             });
         }
+
         rst.sort((a, b) => a.targeted - b.targeted);
         if(rst[0]) {
-            order.unit.tgt = rst[0].target;
-            return rst[0].target;
+            if(!unitTgt || rst[0].targeted < unitTgt.targeted) {
+                order.unit.tgt = rst[0].target;
+                return rst[0].target;
+            } else {
+                return unitTgt.target;
+            }
         }
     },
 
