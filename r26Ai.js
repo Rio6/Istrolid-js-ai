@@ -335,6 +335,7 @@ var order = {
      * append: whether to queue order
      */
     move: function(des) {
+        if(!des) return;
         var unitOrder = order.getUnitOrders(order.unit)[0];
         if(!unitOrder || !simpleEquals(unitOrder.dest, des) &&
             v2.distance(order.unit.pos, des) > 50)
