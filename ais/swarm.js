@@ -17,7 +17,7 @@ r26Ai.addAiRule({
                     return;
             }
 
-            var avoidDest = movement.avoidShots(1, bullet => !bullet.instant);
+            var avoidDest = movement.avoidShots(20, bullet => !bullet.instant);
             if(avoidDest) {
                 order.move(avoidDest);
                 return;
@@ -25,7 +25,7 @@ r26Ai.addAiRule({
 
             if(enemy) return;
 
-            var point = movement.spread(order.findThings(-1, target =>
+            var point = movement.spread(order.findThings(target =>
                 target.commandPoint &&
                 (target.side !== unit.side || target.capping > 0)));
             if(point) {
