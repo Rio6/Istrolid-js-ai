@@ -61,5 +61,4 @@ r26Ai.addAiRule({
     }
 });
 
-r26Ai.enabled = true;
-
+r26Ai.enabled = false;
