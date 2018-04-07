@@ -229,10 +229,14 @@ var build = {
     startBuilding: function(index, filter) {
         build.index = index;
         build.filter = filter;
+        build.buildPriority = [];
     },
 
     // Used in r26Ai to sort out priorities and send out build orders
     updateBuildQ: function() {
+        if(build.buildPriority.length === 0) // Don't update if nothing was called (for cyborging)
+            return
+
         var buildQ = [];
 
         build.buildPriority.sort((a, b) => a.priority - b.priority).forEach(b => {
@@ -260,8 +264,6 @@ var build = {
 
             commander.buildQ = buildQ;
         }
-
-        build.buildPriority = [];
     },
 
     /*
@@ -430,7 +432,7 @@ var order = {
      * Note that you can't get orders of units that are not yours in multiplayer
      * (Used to be able to get them but not anymore)
      */
-    getUnitOrders(unit) {
+    getUnitOrders: function(unit) {
         var unit = unit || order.unit;
         if(unit) {
             if(unit.orders && unit.orders.length > 0)
