@@ -40,13 +40,6 @@ r26Ai.addAiRule({
     ai: function(unit) {
         this.run = function() {
 
-            var enemy = order.findThings(1000, tgt =>
-                tgt.unit && tgt.side === otherSide(unit.side))[0];
-            if(enemy) {
-                order.move(movement.fleeRange(enemy.pos, enemy.weaponRange));
-                return;
-            }
-
             var point = movement.spread(order.findThings(target =>
                 target.commandPoint &&
                 (target.side !== unit.side || target.capping > 0)));
@@ -56,6 +49,23 @@ r26Ai.addAiRule({
                     order.move(tgtPos);
                     return;
                 }
+            }
+        }
+    }
+});
+
+r26Ai.addAiRule({
+    filter: unit => JSON.stringify(unit.spec) === "{\"parts\":[{\"pos\":[0,20],\"type\":\"CloakGenerator\",\"dir\":0},{\"pos\":[10,-20],\"type\":\"Engine03\",\"dir\":0},{\"pos\":[-30,10],\"type\":\"Solar1x1\",\"dir\":0},{\"pos\":[-10,50],\"type\":\"Battery1x1\",\"dir\":0},{\"pos\":[30,30],\"type\":\"Wing1x1Notch\",\"dir\":0},{\"pos\":[-10,80],\"type\":\"VArmor1x1Hook\",\"dir\":0},{\"pos\":[-40,40],\"type\":\"ShapedWarhead\",\"dir\":0},{\"pos\":[20,60],\"type\":\"ShapedWarhead\",\"dir\":0},{\"pos\":[40,0],\"type\":\"ShapedWarhead\",\"dir\":0},{\"pos\":[-20,-20],\"type\":\"ShapedWarhead\",\"dir\":0}],\"name\":\"\",\"aiRules\":[]}",
+    ai: function(unit) {
+        this.run = function() {
+
+            var enemy = order.findThings(tgt =>
+                tgt.unit && tgt.side === otherSide(unit.side) &&
+                tgt.maxHP >= 100 && tgt.maxHP <= 200,
+                unit.radius + 100)[0];
+            if(enemy) {
+                order.move(movement.fleeRange(enemy.pos, enemy.weaponRange));
+                return;
             }
         }
     }

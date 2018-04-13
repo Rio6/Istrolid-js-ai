@@ -9,8 +9,8 @@ r26Ai.addAiRule({
     ai: function(unit) {
         this.run = function() {
 
-            var enemy = order.findThings(1000, tgt =>
-                tgt.unit && tgt.side === otherSide(unit.side))[0];
+            var enemy = order.findThings(tgt =>
+                tgt.unit && tgt.side === otherSide(unit.side), 1000)[0];
             if(enemy) {
                 order.follow(enemy);
                 if(v2.distance(unit.pos, enemy.pos) < 1200)
@@ -38,7 +38,7 @@ r26Ai.addAiRule({
         }
     },
     build: function() {
-        build.buildUnit(100, 1);
+        build.buildUnits(100, 1);
     }
 });
 
