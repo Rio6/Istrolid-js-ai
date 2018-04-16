@@ -154,6 +154,7 @@ var r26Ai = {
             order.stopOrdering();
 
             if(r26Ai.step % 60 === 0) {
+                let built = false;
                 for(let i in r26Ai.rules) {
                     let rule = r26Ai.rules[i];
                     for(let j = 0; j < commander.buildBar.length; j++) {
@@ -166,13 +167,16 @@ var r26Ai = {
 
                                 build.startBuilding(j, rule.filter);
                                 rule.build(unit);
+
+                                built = true;
                             }
                         } catch(e) {
                             console.error(e.stack);
                         }
                     }
                 }
-                build.updateBuildQ();
+                if(built)
+                    build.updateBuildQ();
             }
 
             r26Ai.step++;
@@ -229,14 +233,10 @@ var build = {
     startBuilding: function(index, filter) {
         build.index = index;
         build.filter = filter;
-        build.buildPriority = [];
     },
 
     // Used in r26Ai to sort out priorities and send out build orders
     updateBuildQ: function() {
-        if(build.buildPriority.length === 0) // Don't update if nothing was called (for cyborging)
-            return
-
         var buildQ = [];
 
         build.buildPriority.sort((a, b) => a.priority - b.priority).forEach(b => {
@@ -263,6 +263,8 @@ var build = {
             }
 
             commander.buildQ = buildQ;
+
+            build.buildPriority = [];
         }
     },
 
