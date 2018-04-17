@@ -59,13 +59,21 @@ r26Ai.addAiRule({
     ai: function(unit) {
         this.run = function() {
 
+            if(condition.hasPlayerOrder(unit)) return;
+
             var enemy = order.findThings(tgt =>
                 tgt.unit && tgt.side === otherSide(unit.side) &&
                 tgt.maxHP >= 100 && tgt.maxHP <= 200,
-                unit.radius + 100)[0];
+                1500)[0];
             if(enemy) {
-                order.move(movement.fleeRange(enemy.pos, enemy.weaponRange));
+                order.follow(enemy);
+                if(v2.distance(enemy.pos, unit.pos) > 200 + unit.radius + enemy.radius)
+                    order.hold();
+                else
+                    order.unhold();
                 return;
+            } else {
+                order.stop();
             }
         }
     }
