@@ -671,7 +671,7 @@ var movement = {
     /*
      * Return a position that (try to) avoid all shots
      * that matches check function
-     * It basically runs to the opposite direction of bullet
+     * It's basically moving to the opposite direction of bullets without stopping
      *
      * avoidDamage: damage to avoid
      * check: a function that check if you want to avoid this bullet
@@ -679,12 +679,14 @@ var movement = {
     avoidShots: function(avoidDamage, check) {
         if(!order.unit) return;
 
-        var hitTime = function(unit, shot) {
+        var hitTime = function(unit, shot, margin) {
 
             /*
              * a^2 + b^2 = c^2
-             * (a.x + t*v.x - b.x)^2 + (a.y + t*v.y - b.y)^2 = d^2
-             * t^2 * (v.x^2 + v.y^2) + t * (2*a.x*v.x - 2*b.x*v.x + 2*a.y*v.y - 2*b.y*v.y) + (a.x^2 - 2*a.x*b.x + b.x^2 + a.y^2 - 2*a.y*b.y + b.y^2 - d^2)
+             * u = unit pos, s = shot pos, v = relative velocity, d = distance when touching, t = time
+             * u + t*v - s = relative distance after time
+             * (u.x + t*v.x - s.x)^2 + (u.y + t*v.y - s.y)^2 = d^2
+             * t^2 * (v.x^2 + v.y^2) + t * (2*u.x*v.x - 2*s.x*v.x + 2*u.y*v.y - 2*s.y*v.y) + (u.x^2 - 2*u.x*s.x + s.x^2 + u.y^2 - 2*u.y*s.y + s.y^2 - d^2)
              * --------------------------------
              * a*t^2 + b*t + c = 0
              * t = (-b +- sqrt(b^2 - 4*a*c)) / 2*a
@@ -709,7 +711,7 @@ var movement = {
                 y: shot.pos[1]
             };
 
-            var d = unit.radius + shot.radius;
+            var d = unit.radius + shot.radius + margin;
 
             var a = sqr(v.x) + sqr(v.y);
             var b = 2 * s.x * v.x - 2 * u.x * v.x + 2 * s.y * v.y - 2 * u.y * v.y;
@@ -720,6 +722,9 @@ var movement = {
 
         sim.spacesRebuild();
 
+        var avoidTime = 48;
+        var avoidMargin = 100;
+
         var avoidCount = 0;
         var avoidPos = v2.create();
 
@@ -729,15 +734,15 @@ var movement = {
                 if(bullet && bullet.damage >= avoidDamage && check(bullet)) {
                     if(bullet.instant) {
                     } else if(bullet.hitPos) {
-                        let time = hitTime(order.unit, {pos: bullet.hitPos, vel: [0, 0], radius: bullet.aoe + 100});
-                        if(time > 0 && time < 48) {
+                        let time = hitTime(order.unit, {pos: bullet.hitPos, vel: [0, 0], radius: bullet.aoe}, avoidMargin);
+                        if(time > 0 && time < avoidTime) {
                             v2.add(avoidPos, bullet.hitPos);
                             avoidCount++;
                         }
                     } else {
-                        let time = hitTime(order.unit, bullet);
+                        let time = hitTime(order.unit, bullet, avoidMargin);
                         if(bullet.tracking && bullet.target && bullet.target.id === order.unit.id
-                            || time > 0 && time < 48) {
+                            || time > 0 && time < avoidTime) {
 
                             v2.add(avoidPos, bullet.pos);
                             avoidCount++;
@@ -747,7 +752,22 @@ var movement = {
             });
         }
 
-        if(avoidCount > 0)
-            return v2.add(v2.scale(v2.norm(v2.sub(order.unit.pos, v2.scale(avoidPos, 1 / avoidCount), v2.create())), v2.mag(order.unit.vel) + 500), order.unit.pos);
+        if(avoidCount > 0) {
+            var unitAngleVel = v2.mag(order.unit.vel) > 0 ? order.unit.vel : v2.pointTo(v2.create(), order.unit.rot);
+            var avoidDest = v2.sub(order.unit.pos, v2.scale(avoidPos, 1 / avoidCount), v2.create());
+            var destAngle = v2.angle(unitAngleVel) - v2.angle(avoidDest);
+            var turnAngle = Math.min(
+                order.unit.turnSpeed * (v2.mag(order.unit.vel) + 500) / order.unit.maxSpeed * 0.2, // max angle without losing speed
+                destAngle
+            );
+
+            if(destAngle <= 0 || destAngle >= Math.PI) {
+                v2.rotate(unitAngleVel, turnAngle, avoidDest);
+            } else {
+                v2.rotate(unitAngleVel, -turnAngle, avoidDest);
+            }
+
+            return v2.add(v2.scale(v2.norm(avoidDest), v2.mag(order.unit.vel) + 500), order.unit.pos);
+        }
     }
 }
