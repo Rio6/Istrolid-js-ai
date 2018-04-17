@@ -86,6 +86,16 @@ BattleMode.prototype.tick = function() {
 }
 */
 
+BattleMode.prototype.genOrderId = function() {
+    if(order.ordering)
+        var o = this.orderId + 1;
+    else
+        var o = this.orderId;
+
+    this.orderId += 2;
+    return o;
+}
+
 v2.distanceSqr = function(from, to) {
     var x = to[0] - from[0];
     var y = to[1] - from[1];
@@ -218,7 +228,7 @@ var r26Ai = {
     // Clear ai rules
     clearAiRule:function() {
         r26Ai.rules = [];
-    },
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -315,6 +325,7 @@ var order = {
 
     oriSel: null,
     unit: null,
+    ordering: false, // Used to get order id for ai orders and player orders
 
     // Used in r26Ai to start ordering an unit
     startOrdering: function(unit) {
@@ -342,8 +353,12 @@ var order = {
         if(!des) return;
         var unitOrder = order.getUnitOrders(order.unit)[0];
         if(!unitOrder || !simpleEquals(unitOrder.dest, des) &&
-            v2.distance(order.unit.pos, des) > 50)
+            v2.distance(order.unit.pos, des) > 50) {
+
+            order.ordering = true;
             battleMode.moveOrder([des], false);
+            order.ordering = false;
+        }
     },
 
     /*
@@ -359,7 +374,10 @@ var order = {
         if(unitOrder && unitOrder.type === "Follow" &&
             unitOrder.targetId === unit.id)
             return
+
+        order.ordering = true;
         battleMode.followOrder(unit, false);
+        order.ordering = false;
     },
 
     /*
@@ -546,6 +564,23 @@ var condition = {
      */
     isEnemySide: function(unit) {
         return unit && unit.side === otherSide(commander.side);
+    },
+
+    /*
+     * If this unit has player order queued
+     * Only work on your own units
+     *
+     * unit: unit to check
+     */
+    hasPlayerOrder: function(unit) {
+        var unitOrders = order.getUnitOrders();
+        if(!unit || !unitOrders) return false;
+
+        for(let i in unitOrders) {
+            if(unitOrders[i].id % 2 === 0)
+                return true;
+        }
+        return false;
     }
 }
 
