@@ -836,7 +836,7 @@ var movement = {
                 Math.abs(destAngle)
             );
 
-            if(destAngle <= 0 || destAngle >= Math.PI) {
+            if(destAngle < 0 && destAngle > -Math.PI || destAngle > Math.PI) {
                 v2.rotate(unitAngleVel, turnAngle, avoidDest);
             } else {
                 v2.rotate(unitAngleVel, -turnAngle, avoidDest);
