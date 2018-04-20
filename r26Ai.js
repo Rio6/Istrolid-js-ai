@@ -602,8 +602,10 @@ var condition = {
         if(!unit || !unitOrders) return false;
 
         for(let i in unitOrders) {
-            if(unitOrders[i].id % 2 === 0)
+            let id = unitOrders[i].id;
+            if(id % 2 === 0 && unit.onOrderId === id) {
                 return true;
+            }
         }
         return false;
     },
