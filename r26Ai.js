@@ -418,6 +418,25 @@ var order = {
     },
 
     /*
+     * Runs an array of istrolid formated orders
+     *
+     * orders: orders to run
+     */
+    runOrders: function(orders) {
+        var firstOrder = true;
+        for(let unitOrder of orders) {
+            if(unitOrder.type === "Move") {
+                battleMode.moveOrder([unitOrder.dest], firstOrder);
+                firstOrder = false;
+            } else if(unitOrder.type === "Follow") {
+                let unit = {id: unitOrder.targetId};
+                battleMode.followOrder(unit, firstOrder);
+                firstOrder = false;
+            }
+        }
+    },
+
+    /*
      * Find everything you want that's sorted in distance
      *
      * check: function to check if this thing is what you want
@@ -579,6 +598,21 @@ var condition = {
         for(let i in unitOrders) {
             if(unitOrders[i].id % 2 === 0)
                 return true;
+        }
+        return false;
+    },
+
+    /*
+     * If this unit is selected by player
+     *
+     * unit: unit to cehck
+     */
+    unitSelected: function(unit) {
+        if(!unit) return;
+        for(let i in order.oriSel) {
+            if(unit.id === order.oriSel[i].id) {
+                return true;
+            }
         }
         return false;
     }
