@@ -769,8 +769,8 @@ var movement = {
                 if(bullet && bullet.damage >= avoidDamage && check(bullet)) {
                     if(bullet.instant) {
                     } else if(bullet.hitPos) {
-                        let time = hitTime(order.unit, {pos: bullet.hitPos, vel: [0, 0], radius: bullet.aoe}, avoidMargin);
-                        if(time > 0 && time < avoidTime) {
+                        let time = v2.distance(bullet.pos, bullet.hitPos) / v2.mag(bullet.vel);
+                        if(time < avoidTime && v2.distance(bullet.hitPos, v2.add(v2.scale(order.unit.vel, time, v2.create()), order.unit.pos)) < bullet.aoe + order.unit.radius + avoidMargin) {
                             v2.add(avoidPos, bullet.hitPos);
                             avoidCount++;
                         }
@@ -793,7 +793,7 @@ var movement = {
             var destAngle = v2.angle(unitAngleVel) - v2.angle(avoidDest);
             var turnAngle = Math.min(
                 order.unit.turnSpeed * (v2.mag(order.unit.vel) + 500) / order.unit.maxSpeed * 0.2, // max angle without losing speed
-                destAngle
+                Math.abs(destAngle)
             );
 
             if(destAngle <= 0 || destAngle >= Math.PI) {
