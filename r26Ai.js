@@ -43,7 +43,7 @@
 
 var hook = hook || {
     process: Interpolator.prototype.process,
-    timer: setInterval(() => r26Ai.tick(), 16)
+    timer: setInterval(() => r26Ai.tick(), 60)
 //    tick: BattleMode.prototype.tick
 };
 
@@ -151,7 +151,7 @@ var r26Ai = {
             for(let i in sim.things) {
                 let thing = sim.things[i];
                 if(thing.r26Ai) {
-                    if((r26Ai.step + thing.id) % 30 === 0) {
+                    if((r26Ai.step + thing.id) % 8 === 0) {
                         order.startOrdering(thing);
                         try {
                             thing.r26Ai.run();
@@ -163,7 +163,7 @@ var r26Ai = {
             }
             order.stopOrdering();
 
-            if(r26Ai.step % 60 === 0) {
+            if(r26Ai.step % 48 === 0) {
                 let built = false;
                 for(let i in r26Ai.rules) {
                     let rule = r26Ai.rules[i];
