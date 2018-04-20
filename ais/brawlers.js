@@ -28,6 +28,8 @@ r26Ai.addAiRule({
 
             order.unhold();
 
+            if(unit.energy < 60000) return;
+
             var spawn = order.findThings(tgt =>
                     tgt.spawn && condition.isEnemySide(tgt))[0];
 
@@ -40,7 +42,7 @@ r26Ai.addAiRule({
     },
     build: function b(unit) {
 
-        if(r26Ai.step < 200)
+        if(r26Ai.step < 48)
             b.spawned = false;
 
         if(!b.spawned) {
@@ -199,7 +201,7 @@ r26Ai.addAiRule({
                     (weapon.instant || weapon.tracking)) ||
                     condition.inRangeDps(target.pos, unit.side, 100)));
 
-            var point = movement.spread(points);
+            var point = movement.spread(points.slice(0, 2));
             if(point) {
                 var tgtPos = movement.inRange(point.pos, point.radius);
                 if(tgtPos) {
@@ -261,11 +263,8 @@ r26Ai.addAiRule({
     },
     build: function b(unit) {
 
-        if(r26Ai.step < 20)
-            b.last = r26Ai.step;
-
         if(!b.last)
-            b.last = 1;
+            b.last = 48;
 
         var count = order.findThings(tgt =>
             tgt.name === unit.name && condition.isMyUnit(tgt) && tgt.energy > 300).length;
@@ -282,12 +281,12 @@ r26Ai.addAiRule({
             var pointCount = order.findThings(tgt =>
                 tgt.commandPoint && tgt.side === commander.side).length;
 
-            if(r26Ai.step - b.last > unit.cost * want / (10 + pointCount) * 60) {//900) {
+            if(r26Ai.step - b.last > unit.cost * want / (10 + pointCount) * 16) {
                 build.buildUnits(want, 1);
                 b.last = r26Ai.step;
             }
         } else {
-            build.keepUnits(5, 1);
+            build.keepUnits(6, 1);
         }
     }
 });
