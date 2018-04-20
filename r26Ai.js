@@ -247,6 +247,8 @@ var build = {
 
     // Used in r26Ai to sort out priorities and send out build orders
     updateBuildQ: function() {
+        if(r26Ai.step < 48) return;
+
         var buildQ = [];
 
         build.buildPriority.sort((a, b) => a.priority - b.priority).forEach(b => {
@@ -295,11 +297,13 @@ var build = {
             }
         });
 
-        build.buildPriority.push({
-            index: build.index,
-            number: buildNumber,
-            priority: priority,
-        });
+        if(buildNumber > 0) {
+            build.buildPriority.push({
+                index: build.index,
+                number: buildNumber,
+                priority: priority,
+            });
+        }
     },
 
     /*
@@ -310,11 +314,13 @@ var build = {
      *      default is 0;
      */
     buildUnits: function(number, priority = 0) {
-        build.buildPriority.push({
-            index: build.index,
-            number: number,
-            priority: priority
-        });
+        if(number > 0) {
+            build.buildPriority.push({
+                index: build.index,
+                number: number,
+                priority: priority
+            });
+        }
     }
 }
 
