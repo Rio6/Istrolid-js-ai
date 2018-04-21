@@ -5,9 +5,8 @@ r26Ai.addAiRule({
     ai: function(unit) {
         this.run = function() {
             if(condition.unitSelected(unit)) return;
-            if(condition.hasPlayerOrder(unit)) console.log("DEBUG");
 
-            var avoidDest = movement.avoidShots(20, bullet => !bullet.instant);
+            var avoidDest = movement.avoidShots(15, bullet => !bullet.instant && v2.mag(bullet.vel) * 16 < 750);
             if(avoidDest) {
                 if(condition.hasPlayerOrder(unit))
                     this.orders = order.getUnitOrders(unit);
@@ -29,6 +28,20 @@ r26Ai.addAiRule({
     filter: unit => JSON.stringify(unit.spec) === "{\"parts\":[{\"pos\":[-30,0],\"type\":\"Engine04\",\"dir\":0},{\"pos\":[10,30],\"type\":\"Solar1x1\",\"dir\":0},{\"pos\":[-10,30],\"type\":\"Wing1x1Notch\",\"dir\":0},{\"pos\":[30,10],\"type\":\"Solar1x1\",\"dir\":0},{\"pos\":[-30,30],\"type\":\"Wing1x1Notch\",\"dir\":0},{\"pos\":[30,-10],\"type\":\"Solar1x1\",\"dir\":0},{\"pos\":[30,30],\"type\":\"Battery1x1\",\"dir\":0},{\"pos\":[0,0],\"type\":\"CloakGenerator\",\"dir\":0}],\"name\":\"\",\"aiRules\":[[\"Finish player orders\"],[\"@attackTypes enemy that is @absoluteTypes then # within #m\",\"Flee\",\"more DPS\",1,900],[\"When #% of energy, @chargeTypes\",5,\"flee enemies\"],[\"@capTypes command points within #m\",\"Spread to\",10000]]}",
     ai: function(unit) {
         this.run = function() {
+
+            var enemy = order.findThings(tgt =>
+                tgt.unit && tgt.side === otherSide(unit.side) &&
+                tgt.weaponDPS > 0)[0];
+            if(enemy) {
+                order.move(movement.fleeRange(enemy.pos, enemy.weaponRange));
+                return;
+            }
+
+            var avoidDest = movement.avoidShots(0, bullet => bullet.hitPos);
+            if(avoidDest) {
+                order.move(avoidDest);
+                return;
+            }
 
             var point = movement.spread(order.findThings(target =>
                 target.commandPoint &&
