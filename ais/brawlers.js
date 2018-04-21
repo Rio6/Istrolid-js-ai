@@ -116,7 +116,7 @@ r26Ai.addAiRule({
                         var dest;
                         if(bananaOrder.dest)
                             dest = bananaOrder.dest;
-                        else
+                        else if(sim.things[bananaOrder.targetId])
                             dest = sim.things[bananaOrder.targetId].pos;
 
                         order.move(dest);
@@ -331,7 +331,7 @@ r26Ai.addAiRule({
                         var dest;
                         if(bananaOrder.dest)
                             dest = bananaOrder.dest;
-                        else
+                        else if(sim.things[bananaOrder.targetId])
                             dest = sim.things[bananaOrder.targetId].pos;
 
                         order.move(dest);
