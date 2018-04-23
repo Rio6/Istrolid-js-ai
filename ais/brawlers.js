@@ -179,7 +179,9 @@ r26Ai.addAiRule({
                 tgt.unit && //tgt.weaponDPS * 16 < unit.hp &&
                 !(condition.hasWeapon(tgt, w => w instanceof parts.FlackTurret)
                     && tgt.energy > 3000) &&
-                condition.isEnemySide(tgt), 2500)[0];
+                condition.isEnemySide(tgt) &&
+                !(tgt.cost > 500 || tgt.maxHP > 800) &&
+                tgt.maxSpeed * 16 >= 150, 2500)[0];
             if(enemy) {
                 if(v2.distance(unit.pos, enemy.pos) < 1000) {
                     order.follow(enemy);
@@ -187,7 +189,7 @@ r26Ai.addAiRule({
                 }
             }
 
-            var avoidDest = movement.avoidShots(1, bullet => !bullet.instant);
+            var avoidDest = movement.avoidShots(15, bullet => !bullet.instant && v2.mag(bullet.vel) * 16 < 750);
             if(avoidDest) {
                 order.move(avoidDest);
                 return;
