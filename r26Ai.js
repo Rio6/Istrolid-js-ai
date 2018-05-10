@@ -191,6 +191,7 @@ var r26Ai = {
 
             r26Ai.step++;
         } else {
+            build.resetBuildQueue();
             r26Ai.step = 0;
         }
     },
@@ -235,7 +236,7 @@ var r26Ai = {
 // Building functions
 var build = {
 
-    index: 0,
+    index: -1,
     filter: null,
     buildPriority: [],
 
@@ -276,8 +277,14 @@ var build = {
 
             commander.buildQ = buildQ;
 
-            build.buildPriority = [];
+            build.resetBuildQueue();
         }
+    },
+
+    resetBuildQueue: function() {
+        build.buildPriority = [];
+        index = -1;
+        filter = null;
     },
 
     /*
