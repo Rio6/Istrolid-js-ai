@@ -28,7 +28,15 @@ r26Ai.addAiRule({
 
             order.unhold();
 
-            if(unit.energy < 60000) return;
+            var lowestE = unit.energy;
+            order.findThings(tgt =>
+                tgt.unit && condition.isMyUnit(tgt) &&
+                tgt.name === "PEAR", 2000).forEach(pear => {
+                    if(pear.energy < lowestE)
+                        lowestE = pear.energy;
+                });
+
+            if(lowestE < 15000) return;
 
             var spawn = order.findThings(tgt =>
                     tgt.spawn && condition.isEnemySide(tgt))[0];
@@ -53,7 +61,7 @@ r26Ai.addAiRule({
             }
         }
 
-        if(commander.money < 2328) {
+        if(commander.money < 2360) {
             if(!b.spawned)
                 return;
         } else {
@@ -180,8 +188,8 @@ r26Ai.addAiRule({
                 !(condition.hasWeapon(tgt, w => w instanceof parts.FlackTurret)
                     && tgt.energy > 3000) &&
                 condition.isEnemySide(tgt) &&
-                !(tgt.cost > 500 || tgt.maxHP > 800) &&
-                tgt.maxSpeed * 16 >= 150, 2500)[0];
+                (!(tgt.cost > 500 || tgt.maxHP > 800) ||
+                tgt.maxSpeed * 16 >= 150), 2500)[0];
             if(enemy) {
                 if(v2.distance(unit.pos, enemy.pos) < 1000) {
                     order.follow(enemy);
@@ -265,8 +273,8 @@ r26Ai.addAiRule({
     },
     build: function b(unit) {
 
-        if(!b.last)
-            b.last = 48;
+        if(!b.last || b.last > r26Ai.step)
+            b.last = r26Ai.step;
 
         var count = order.findThings(tgt =>
             tgt.name === unit.name && condition.isMyUnit(tgt) && tgt.energy > 300).length;
@@ -283,7 +291,7 @@ r26Ai.addAiRule({
             var pointCount = order.findThings(tgt =>
                 tgt.commandPoint && tgt.side === commander.side).length;
 
-            if(r26Ai.step - b.last > unit.cost * want / (10 + pointCount) * 16) {
+            if(r26Ai.step - b.last > unit.cost * want / (10 + pointCount) * 16 * 1.2) {
                 build.buildUnits(want, 1);
                 b.last = r26Ai.step;
             }
