@@ -178,22 +178,42 @@ r26Ai.addAiRule({
     ai: function(unit) {
         this.run = function() {
 
-            /*
-            if(unit.energy <= 0)
-                order.destruct();
-                */
+            var spawn = order.findThings(tgt =>
+                tgt.spawn && !condition.isEnemySide(tgt))[0];
+            var homePoint = order.findThings(tgt =>
+                tgt.commandPoint, -1, spawn.pos)[0];
+
+            if(unit.energy < 100 && homePoint ||
+                unit.energy < 2500 && v2.distance(homePoint.pos, unit.pos) <= homePoint.radius) {
+                order.move(movement.inRange(homePoint.pos, homePoint.radius));
+                return;
+            }
 
             var enemy = order.findThings(tgt =>
                 tgt.unit && //tgt.weaponDPS * 16 < unit.hp &&
-                !(condition.hasWeapon(tgt, w => w instanceof parts.FlackTurret)
-                    && tgt.energy > 3000) &&
                 condition.isEnemySide(tgt) &&
                 (!(tgt.cost > 500 || tgt.maxHP > 800) ||
                 tgt.maxSpeed * 16 >= 150), 2500)[0];
             if(enemy) {
-                if(v2.distance(unit.pos, enemy.pos) < 1000) {
+                let flak = order.findWeapons(enemy, w => w instanceof parts.FlackTurret)[0];
+                if(flak && enemy.energy > 3000) {
+                    let des = movement.fleeRange(enemy.pos, flak.range + unit.radius);
+                    if(des) {
+                        order.move(des);
+                        return;
+                    }
+                }
+                let dist = v2.distance(enemy.pos, unit.pos);
+                if(dist < 400) {
                     order.follow(enemy);
                     return;
+                } else if(dist < 800) {
+                    let toSend = Math.floor(enemy.cost / unit.cost);
+                    let toFollow = movement.spread([enemy], toSend);
+                    if(toFollow) {
+                        order.follow(toFollow);
+                        return;
+                    }
                 }
             }
 
@@ -209,7 +229,8 @@ r26Ai.addAiRule({
                 !(condition.inRangeWeapon(target.pos, unit.side,
                     weapon => weapon.range >= 610 &&
                     (weapon.instant || weapon.tracking)) ||
-                    condition.inRangeDps(target.pos, unit.side, 100)));
+                    condition.inRangeDps(target.pos, unit.side, 100)), -1,
+                order.findThings(tgt => tgt.spawn && !condition.isEnemySide(tgt))[0].pos);
 
             var point = movement.spread(points.slice(0, 2));
             if(point) {
@@ -261,13 +282,8 @@ r26Ai.addAiRule({
                 }
             }
 
-            var spawn = order.findThings(tgt =>
-                tgt.spawn && !condition.isEnemySide(tgt))[0];
-
-            var point = order.findThings(tgt =>
-                tgt.commandPoint, -1, spawn.pos)[0];
-            if(point) {
-                order.move(movement.inRange(point.pos, point.radius));
+            if(homePoint) {
+                order.move(movement.inRange(homePoint.pos, homePoint.radius));
             }
         }
     },
@@ -276,8 +292,14 @@ r26Ai.addAiRule({
         if(!b.last || b.last > r26Ai.step)
             b.last = r26Ai.step;
 
-        var count = order.findThings(tgt =>
-            tgt.name === unit.name && condition.isMyUnit(tgt) && tgt.energy > 300).length;
+        var noECount = 0;
+        var count = order.findThings(tgt => {
+            if(tgt.name === unit.name && condition.isMyUnit(tgt)) {
+                if(tgt.energy < 100) noECount++;
+                return true;
+            }
+            return false;
+        }).length;
         var bananaCount = order.findThings(
             tgt => tgt.name === "BANANA" &&
             condition.isMyUnit(tgt)).length;
@@ -296,7 +318,7 @@ r26Ai.addAiRule({
                 b.last = r26Ai.step;
             }
         } else {
-            build.keepUnits(6, 1);
+            build.keepUnits(6 + noECount, 1);
         }
     }
 });
