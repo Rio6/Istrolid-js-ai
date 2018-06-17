@@ -478,6 +478,25 @@ var order = {
     },
 
     /*
+     * Finds every weapons you want on a unit
+     *
+     * unit: unit to find weapons on
+     * check: function to check if the weapon is what you want
+     */
+    findWeapons: function(unit, check) {
+        var rst = [];
+        if(unit && unit.unit && typeof check === "function") {
+            for(let i in unit.weapons) {
+                let weapon = unit.weapons[i];
+
+                if(check(weapon))
+                    rst.push(weapon);
+            }
+        }
+        return rst;
+    },
+
+    /*
      * Get a unit's order
      * Use this function because in local games, it's unit.orders
      * but in multiplayer games, it's unit.preOrders
@@ -555,6 +574,7 @@ var condition = {
     },
 
     hasWeapon: function(unit, check) {
+        var rst = [];
         if(unit && unit.unit && typeof check === "function") {
             for(let i in unit.weapons) {
                 let weapon = unit.weapons[i];
@@ -645,8 +665,9 @@ var movement = {
      * has the same spec and side as the current ordering unit
      *
      * targets: return 1 target out of the targets
+     * count: how many units for 1 target, 0 for as many as possible
      */
-    spread: function(targets) {
+    spread: function(targets, count = 0) {
 
         if(!order.unit || !targets) return;
 
@@ -683,6 +704,10 @@ var movement = {
 
         rst.sort((a, b) => a.targeted - b.targeted);
         if(rst[0]) {
+            if(count > 0 && rst[0].targeted >= count) {
+                order.unit.tgt = null;
+                return;
+            }
             if(!unitTgt || rst[0].targeted < unitTgt.targeted) {
                 order.unit.tgt = rst[0].target;
                 return rst[0].target;
