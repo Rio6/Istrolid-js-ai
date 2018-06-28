@@ -12,7 +12,7 @@ r26Ai.addAiRule({
     ai: function(unit) {
         this.run = function() {
             var enemy = order.findThings(tgt =>
-                tgt.unit && condition.isEnemySide(tgt) &&
+                tgt.unit && tgt.side !== unit.side &&
                 tgt.cloak === 0 &&
                 (tgt.cost > 500 || tgt.maxHP > 800)
                 && tgt.maxSpeed * 16 < 150, 4000)[0];
@@ -39,7 +39,7 @@ r26Ai.addAiRule({
             if(lowestE < 15000) return;
 
             var spawn = order.findThings(tgt =>
-                    tgt.spawn && condition.isEnemySide(tgt))[0];
+                    tgt.spawn && tgt.side !== unit.side)[0];
 
             var point = order.findThings(tgt =>
                 tgt.commandPoint, -1, spawn.pos)[0];
@@ -100,7 +100,7 @@ r26Ai.addAiRule({
                 }
 
                 var enemies = order.findThings(tgt =>
-                    tgt.unit && condition.isEnemySide(tgt) &&
+                    tgt.unit && tgt.side !== unit.side &&
                     tgt.maxHP > 500);
 
                 var enemy = enemies[0];
@@ -142,7 +142,7 @@ r26Ai.addAiRule({
                 order.unhold();
 
                 var enemy = order.findThings(tgt =>
-                    tgt.unit && condition.isEnemySide(tgt) &&
+                    tgt.unit && tgt.side !== unit.side &&
                     tgt.maxHP > 500)[0];
                 if(enemy) {
                     order.follow(enemy);
@@ -155,7 +155,7 @@ r26Ai.addAiRule({
                 }
 
                 var spawn = order.findThings(tgt =>
-                    tgt.spawn && condition.isEnemySide(tgt))[0];
+                    tgt.spawn && tgt.side !== unit.side)[0];
                 var point = order.findThings(tgt =>
                     tgt.commandPoint, -1, spawn.pos)[0];
                 if(point) {
@@ -179,7 +179,7 @@ r26Ai.addAiRule({
         this.run = function() {
 
             var spawn = order.findThings(tgt =>
-                tgt.spawn && !condition.isEnemySide(tgt))[0];
+                tgt.spawn && !tgt.side !== unit.side)[0];
             var homePoint = order.findThings(tgt =>
                 tgt.commandPoint, -1, spawn.pos)[0];
 
@@ -191,7 +191,7 @@ r26Ai.addAiRule({
 
             var enemy = order.findThings(tgt =>
                 tgt.unit && //tgt.weaponDPS * 16 < unit.hp &&
-                condition.isEnemySide(tgt) &&
+                tgt.side !== unit.side &&
                 (!(tgt.cost > 500 || tgt.maxHP > 800) ||
                 tgt.maxSpeed * 16 >= 150), 2500)[0];
             if(enemy) {
@@ -225,12 +225,12 @@ r26Ai.addAiRule({
 
             var points = order.findThings(target =>
                 target.commandPoint &&
-                (condition.isEnemySide(target) || target.capping > 0) &&
+                (target.side !== unit.side || target.capping > 0) &&
                 !(condition.inRangeWeapon(target.pos, unit.side,
                     weapon => weapon.range >= 610 &&
                     (weapon.instant || weapon.tracking)) ||
                     condition.inRangeDps(target.pos, unit.side, 100)), -1,
-                order.findThings(tgt => tgt.spawn && !condition.isEnemySide(tgt))[0].pos);
+                order.findThings(tgt => tgt.spawn && !tgt.side !== unit.side)[0].pos);
 
             var point = movement.spread(points.slice(0, 2));
             if(point) {
@@ -275,7 +275,7 @@ r26Ai.addAiRule({
                 }
 
                 var spawn = order.findThings(tgt =>
-                    tgt.spawn && condition.isEnemySide(tgt))[0];
+                    tgt.spawn && tgt.side !== unit.side)[0];
                 if(spawn) {
                     order.move(spawn.pos);
                     return;
@@ -309,11 +309,11 @@ r26Ai.addAiRule({
 
         if(bananaCount > 0 && (pearCount >= 2 || commander.money < 692 && pearCount >= 1)) {
             var want = Math.min(Math.max(order.findThings(tgt =>
-                tgt.cost < 150 && condition.isEnemySide(tgt)).length, 5), 10);
+                tgt.cost < 150 && tgt.side !== unit.side).length, 5), 10);
             var pointCount = order.findThings(tgt =>
                 tgt.commandPoint && tgt.side === commander.side).length;
 
-            if(r26Ai.step - b.last > unit.cost * want / (10 + pointCount) * 16 * 1.2) {
+            if(r26Ai.step - b.last > unit.cost * want / (10 + pointCount) * 16 * 1.8) {
                 build.buildUnits(want, 1);
                 b.last = r26Ai.step;
             }
@@ -346,7 +346,7 @@ r26Ai.addAiRule({
                 }
 
                 var enemy = order.findThings(tgt =>
-                    tgt.unit && condition.isEnemySide(tgt), 1000, banana.pos)[0];
+                    tgt.unit && tgt.side !== unit.side, 1000, banana.pos)[0];
                 if(enemy) {
                     order.follow(enemy);
                     return;
@@ -372,7 +372,7 @@ r26Ai.addAiRule({
                 }
             } else {
                 var enemy = order.findThings(tgt =>
-                    tgt.unit && condition.isEnemySide(tgt))[0];
+                    tgt.unit && tgt.side !== unit.side)[0];
                 if(enemy) {
                     order.follow(enemy);
                     return;
@@ -385,7 +385,7 @@ r26Ai.addAiRule({
             }
 
             var spawn = order.findThings(tgt =>
-                tgt.spawn && condition.isEnemySide(tgt))[0];
+                tgt.spawn && tgt.side !== unit.side)[0];
             var point = order.findThings(tgt =>
                 tgt.commandPoint, -1, spawn.pos)[0];
             if(point) {
