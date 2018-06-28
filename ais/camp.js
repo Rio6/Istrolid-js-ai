@@ -27,7 +27,7 @@ r26Ai.addAiRule({
 
             var enemy = order.findThings(tgt =>
                 tgt.unit && tgt.side !== unit.side &&
-                tgt.cloak === 0 &&
+                tgt.cloak === 0 && v2.mag(tgt.vel) <= unit.maxSpeed &&
                 (tgt.cost > 200 || tgt.maxHP > 300))[0];
 
             if(enemy) {
@@ -44,7 +44,7 @@ r26Ai.addAiRule({
                 tgt.unit && tgt.name === unit.name && condition.isMyUnit(tgt)
                 , -1, eSpawn.pos)[0];
             var distAway = Math.max(10000 - Math.max(vDiff * 5, 2000),
-                closestMelon ? v2.distance(closestMelon.pos, eSpawn.pos) : 1000);
+                closestMelon ? (v2.distance(closestMelon.pos, eSpawn.pos) - unit.radius * 3) : 1000);
             if(v2.distance(unit.pos, eSpawn.pos) <= distAway)
                 order.hold();
             else
