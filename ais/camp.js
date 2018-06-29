@@ -27,28 +27,42 @@ r26Ai.addAiRule({
 
             var enemy = order.findThings(tgt =>
                 tgt.unit && tgt.side !== unit.side &&
-                tgt.cloak === 0 && v2.mag(tgt.vel) <= unit.maxSpeed &&
-                (tgt.cost > 200 || tgt.maxHP > 300))[0];
+                tgt.cloak === 0 &&
+                (tgt.cost > 300 || tgt.maxHP > 300))[0];
 
+            order.unhold();
+
+            var enemyDist = 10000;
             if(enemy) {
                 order.follow(enemy);
-                if(v2.distance(enemy.pos, unit.pos) < 1700 &&
-                    Math.abs(v2.angle(v2.sub(unit.pos, enemy.pos, [])) - v2.angle(enemy.vel)) < Math.PI / 2) {
-                    order.unhold();
+                enemyDist = v2.distance(unit.pos, enemy.pos);
+                if(enemyDist < 2000 &&
+                    (v2.mag(enemy.vel) <= unit.speed || Math.abs(v2.angle(v2.sub(unit.pos, enemy.pos, [])) - v2.angle(enemy.vel)) < Math.PI / 2)) {
                     return;
                 }
             } else
                 order.follow(eSpawn);
 
-            var closestMelon = order.findThings(tgt =>
+            var closestMelons = order.findThings(tgt =>
                 tgt.unit && tgt.name === unit.name && condition.isMyUnit(tgt)
-                , -1, eSpawn.pos)[0];
-            var distAway = Math.max(10000 - Math.max(vDiff * 5, 2000),
-                closestMelon ? (v2.distance(closestMelon.pos, eSpawn.pos) - unit.radius * 3) : 1000);
-            if(v2.distance(unit.pos, eSpawn.pos) <= distAway)
-                order.hold();
-            else
-                order.unhold();
+                , -1, eSpawn.pos);
+
+            if(closestMelons.length >= 2 && closestMelons[0].id === unit.id &&
+                v2.distance(closestMelons[1].pos, eSpawn.pos) - v2.distance(unit.pos, eSpawn.pos) > unit.radius * 2) {
+
+                if(enemyDist < 2000)
+                    order.hold();
+                else
+                    order.stop();
+            } else {
+                var distAway = Math.min(10000 - Math.max(vDiff * 2, 2000),
+                    closestMelons[0] ? (v2.distance(closestMelons[0].pos, eSpawn.pos) + unit.radius * 2) : 9000);
+                if(v2.distance(unit.pos, eSpawn.pos) <= distAway)
+                    if(enemyDist < 2000)
+                        order.hold();
+                    else
+                        order.stop();
+            }
         }
     },
     build: function(unit) {
@@ -61,6 +75,12 @@ r26Ai.addAiRule({
     filter: unit => unit.mainWeapon instanceof parts.RingTurret && unit.cost < 100,
     ai: function(unit) {
         this.run = function() {
+
+            var avoidDest = movement.avoidShots(20, bullet => !bullet.instant);
+            if(avoidDest) {
+                order.move(avoidDest);
+                return;
+            }
 
             if(unit.energy / unit.storeEnergy > 0.8) this.resting = false;
 
@@ -81,12 +101,6 @@ r26Ai.addAiRule({
                 }
             }
 
-            var avoidDest = movement.avoidShots(20, bullet => !bullet.instant);
-            if(avoidDest) {
-                order.move(avoidDest);
-                return;
-            }
-
             if(enemy) return;
 
             var point = movement.spread(order.findThings(target =>
@@ -103,7 +117,7 @@ r26Ai.addAiRule({
     },
     build: function b(unit) {
 
-        if(!b.last || b.last > r26Ai.step) {
+        if(!b.last || b.last > sim.step) {
             b.last = -1000;
             return;
         }
@@ -112,9 +126,9 @@ r26Ai.addAiRule({
         var pointCount = order.findThings(tgt =>
             tgt.commandPoint && tgt.side === commander.side).length;
 
-        if(r26Ai.step - b.last > unit.cost * want / (10 + pointCount) * 16 * 1.8) {
+        if(sim.step - b.last > unit.cost * want / (10 + pointCount) * 16 * 1.8) {
             build.buildUnits(want, 1);
-            b.last = r26Ai.step;
+            b.last = sim.step;
         }
     }
 });
