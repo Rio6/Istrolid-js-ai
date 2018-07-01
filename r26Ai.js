@@ -837,29 +837,27 @@ var movement = {
         var avoidCount = 0;
         var avoidPos = v2.create();
 
-        if(typeof check === "function") {
-            let bulletSpaces = sim.bulletSpaces[otherSide(order.unit.side)];
-            bulletSpaces.findInRange(order.unit.pos, order.unit.radius + 1000, bullet => {
-                if(bullet && bullet.damage >= avoidDamage && check(bullet)) {
-                    if(bullet.instant) {
-                    } else if(bullet.hitPos) {
-                        let time = v2.distance(bullet.pos, bullet.hitPos) / v2.mag(bullet.vel);
-                        if(time < avoidTime && v2.distance(bullet.hitPos, v2.add(v2.scale(order.unit.vel, time, v2.create()), order.unit.pos)) < bullet.aoe + order.unit.radius + avoidMargin) {
-                            v2.add(avoidPos, bullet.hitPos);
-                            avoidCount++;
-                        }
-                    } else {
-                        let time = hitTime(order.unit, bullet, avoidMargin);
-                        if(bullet.tracking && bullet.target && bullet.target.id === order.unit.id
-                            || time > 0 && time < avoidTime) {
+        let bulletSpaces = sim.bulletSpaces[otherSide(order.unit.side)];
+        bulletSpaces.findInRange(order.unit.pos, order.unit.radius + 1000, bullet => {
+            if(bullet && bullet.damage >= avoidDamage && (!check || check(bullet))) {
+                if(bullet.instant) {
+                } else if(bullet.hitPos) {
+                    let time = v2.distance(bullet.pos, bullet.hitPos) / v2.mag(bullet.vel);
+                    if(time < avoidTime && v2.distance(bullet.hitPos, v2.add(v2.scale(order.unit.vel, time, v2.create()), order.unit.pos)) < bullet.aoe + order.unit.radius + avoidMargin) {
+                        v2.add(avoidPos, bullet.hitPos);
+                        avoidCount++;
+                    }
+                } else {
+                    let time = hitTime(order.unit, bullet, avoidMargin);
+                    if(bullet.tracking && bullet.target && bullet.target.id === order.unit.id
+                        || time > 0 && time < avoidTime) {
 
-                            v2.add(avoidPos, bullet.pos);
-                            avoidCount++;
-                        }
+                        v2.add(avoidPos, bullet.pos);
+                        avoidCount++;
                     }
                 }
-            });
-        }
+            }
+        });
 
         if(avoidCount > 0) {
             var unitAngleVel = v2.mag(order.unit.vel) > 0 ? order.unit.vel : v2.pointTo(v2.create(), order.unit.rot);
