@@ -92,14 +92,14 @@ A mod loader keeps your api up to date. You might not want that, though. Because
 
 Replace r26Ai.js with a mod loader, and it loads the newest commit from github.
 
-A simple mod loader by nexec:
+A simple mod loader:
 ```javascript
-httpGet(theUrl) {
+loadMod(theUrl) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open( "GET", theUrl, false );
     xmlHttp.send( null );
-    return xmlHttp.responseText;
+    eval(xmlHttp.responseText);
 }
 
-eval(httpGet("https://raw.githubusercontent.com/Rio6/Istrolid-js-ai/master/r26Ai.js"));
+loadMod("https://raw.githubusercontent.com/Rio6/Istrolid-js-ai/master/r26Ai.js"));
 ```
