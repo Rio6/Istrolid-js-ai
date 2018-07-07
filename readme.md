@@ -1,15 +1,7 @@
 # Istrolid Javascript AI API
 This is a library for coding Istrolid AI in Javascript
 
-## Contents
-
-[Crash Course](#crash-course)
-
-[Example](#example)
-
-[Documentation](https://f4tornado.github.io/Istrolid-JS-Ai-Docs/)
-
-[Installation](#installation)
+[Documentation](https://Rio6.github.io/Istrolid-js-ai)
 
 ## Crash Course
 Call `r26Ai.addAiRule(rule)` to add an ai rule.
