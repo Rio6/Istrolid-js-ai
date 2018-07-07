@@ -32,13 +32,13 @@ r26Ai.addAiRule({
 
             var enemyDist = 10000;
             if(enemy) {
-                order.follow(enemy);
                 enemyDist = v2.distance(unit.pos, enemy.pos);
-                if( (v2.mag(enemy.vel) <= unit.speed || Math.abs(v2.angle(v2.sub(unit.pos, enemy.pos, [])) - v2.angle(enemy.vel)) < Math.PI / 2)) {
+                if(enemyDist < 2000 &&
+                    (v2.mag(enemy.vel) <= unit.speed || Math.abs(v2.angle(v2.sub(unit.pos, enemy.pos, [])) - v2.angle(enemy.vel)) < Math.PI / 2)) {
+                    order.follow(enemy);
                     return;
                 }
-            } else
-                order.follow(eSpawn);
+            }
 
             var closestMelons = order.findThings(tgt =>
                 tgt.unit && tgt.name === unit.name && tgt.side === unit.side
@@ -49,19 +49,28 @@ r26Ai.addAiRule({
 
                 if(enemyDist < unit.weaponRange)
                     order.hold();
-                else
+                else {
                     order.stop();
+                    return;
+                }
             } else {
                 var distAway = Math.min(10000 - Math.max(vDiff * 2, 2000),
                     closestMelons[0] ? (v2.distance(closestMelons[0].pos, eSpawn.pos) + unit.radius * 2) : 9000);
-                if(v2.distance(unit.pos, eSpawn.pos) <= distAway)
+                if(v2.distance(unit.pos, eSpawn.pos) <= distAway) {
                     if(enemyDist < unit.weaponRange)
                         order.hold();
-                    else
+                    else {
                         order.stop();
-                else
+                        return;
+                    }
+                } else
                     order.unhold();
             }
+
+            if(enemy)
+                order.follow(enemy);
+            else
+                order.follow(eSpawn);
         }
     },
     build: function(unit) {
