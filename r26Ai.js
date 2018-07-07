@@ -475,7 +475,7 @@ var order = {
      *
      * @param {check} check - function to check if this thing is what you want
      * @param {number} [range=-1] - find things within this range, if range <= 0, check everything
-     * @param {v2} closeTo - sort using the distance between the target and closeTo, default is the current ordering unit position, or [0, 0] if not available
+     * @param {v2} [closeTo] - sort using the distance between the target and closeTo, default is the current ordering unit position, or [0, 0] if not available
      */
     findThings: function(check, range = -1, closeTo) {
         var rst = [];
