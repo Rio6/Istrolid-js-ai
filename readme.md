@@ -25,7 +25,7 @@ and maybe use functions in `movement.*` to get where you want to go, or just
 use the position of the targets you have to call functions in `order.*`
 to give orders.
 
-`build` is called every 60 ticks, you can use `build.buildUnit(quantity, priority)` to
+`build` is called every 3 seconds, you can use `build.buildUnit(quantity, priority)` or `build.keepUnits(quantity, priority)` to
 field units.
 
 ## Example:
@@ -83,14 +83,14 @@ r26Ai.addAiRule({
 1. Get Istrolid on Steam
 2. Go to you steam folder, and go to `steamapps/common/istrolid/resources`
 3. Extract app.asar to a folder app. I recommend using [this](https://github.com/electron/asar)
-4. put `r26Ai.js` inside `js` folder
+4. Put `r26Ai.js` inside `js` folder
 5. Create another javascript file in the folder
-6. Reference both files in `game.html`
+6. Reference both files in `game.html` ie. `<script src="js/r26Ai.js"><script>`
 7. Write your AI in the second file!
 ### Use a loader
-A mod loader keeps your api up to date. You might not want that, though. Because updating breaks ai a lot.
+A mod loader keeps your api up to date. You might not want that, though. Updates can break your ai.
 
-Replace r26Ai.js with a mod loader, and it loads the newest commit from github.
+Install the mod loader script using the same way as [Installing on steam version](#installing-on-steam-version)
 
 A simple mod loader:
 ```javascript

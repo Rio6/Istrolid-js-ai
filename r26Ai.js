@@ -17,8 +17,9 @@
  * use the position of the targets you have to call functions in `order.*`
  * to give orders.
  *
- * `build` is called every 60 ticks, you can use `build.buildUnit()` to
- * build units.
+ * `build` is called every 3 seconds, you can use
+ * `build.buildUnits(quantity, priority)` or `build.keepUnits(quantity, priority)`
+ * to build units.
  *
  * Example:
  *  r26Ai.addAiRule({
