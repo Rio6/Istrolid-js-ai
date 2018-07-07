@@ -39,6 +39,26 @@
  * Look at other js files for the actual use
  */
 
+/**
+ * @typedef {number[]} v2
+ * @property {int} 0 x coordinate
+ * @property {int} 1 y coordinate
+ */
+/**
+ * @typedef {Object} unit
+ */
+/**
+ * @typedef {Object} thing
+ */
+
+/**
+ * Callback to check if you want this thing
+ * @callback check
+ * @param {thing} target - Target to check
+ * @returns {boolean} - Whether you want this object or not
+ */
+
+
 //-----------------------------------------------------------------------------
 // Override and add/hook functions to istrolid
 
@@ -120,6 +140,7 @@ for(let i of ["HeavyBeam", "PDLaserBullet", "LightBeam", "TeslaBolt"]) {
 //-----------------------------------------------------------------------------
 // r26Ai add, stores and runs the ai rules
 
+/** @namespace */
 var r26Ai = {
 
     rules: [],
@@ -197,11 +218,9 @@ var r26Ai = {
         }
     },
 
-    /*
+    /**
      * Add an ai rule and also them check and add them to all currently
      * fielded units
-     *
-     * rule: an object with function `filter`, class `ai` that has a function `run`, function `build`
      *
      * Example:
      *  r26Ai.addAiRule({
@@ -217,6 +236,8 @@ var r26Ai = {
      *          build.keepUnits(10, 1);
      *      }
      *  });
+     *
+     * @param {Object} rule - An object with function `filter`, class `ai` that has a function `run`, function `build`
      */
     addAiRule: function(rule) {
         r26Ai.rules.push(rule);
@@ -235,6 +256,7 @@ var r26Ai = {
 
 //-----------------------------------------------------------------------------
 // Building functions
+/** @namespace */
 var build = {
 
     index: -1,
@@ -288,12 +310,11 @@ var build = {
         filter = null;
     },
 
-    /*
+    /**
      * Build units so there are `number` of units on field
      *
-     * number: how many to field
-     * priority: build priority, lower number has higher priority
-     *      default is 0
+     * @param {number} number - how many to field
+     * @param {number} [priority=0] - build priority, lower number has higher priority
      */
     keepUnits: function(number, priority = 0) {
         var buildNumber = number;
@@ -314,12 +335,11 @@ var build = {
         }
     },
 
-    /*
+    /**
      * Build units with a priority
      *
-     * number: how many units to build
-     * priority: build priority, lower number has higher priority
-     *      default is 0;
+     * @param {number} number - how many units to build
+     * @param {number} [priority=0] - build priority, lower number has higher priority
      */
     buildUnits: function(number, priority = 0) {
         if(number > 0) {
@@ -335,6 +355,7 @@ var build = {
 //-----------------------------------------------------------------------------
 // Basic unit orders
 
+/** @namespace */
 var order = {
 
     oriSel: null,
@@ -357,11 +378,10 @@ var order = {
         order.unit = null;
     },
 
-    /*
+    /**
      * Move order
      *
-     * dest: destination to move to
-     * append: whether to queue order
+     * @param {v2} dest - destination to move to
      */
     move: function(des) {
         if(!des) return;
@@ -375,7 +395,7 @@ var order = {
         }
     },
 
-    /*
+    /**
      * Follow order
      *
      * unit: unit to follow (can be anything actually, includes points, stones, bullets...
@@ -394,7 +414,7 @@ var order = {
         order.ordering = false;
     },
 
-    /*
+    /**
      * Stop order
      * It's like pressing x in game
      */
@@ -404,7 +424,7 @@ var order = {
             battleMode.stopOrder();
     },
 
-    /*
+    /**
      * Hold order
      * It's like pressing z, but without toggling back to non-holding state
      */
@@ -413,7 +433,7 @@ var order = {
             battleMode.holdPositionOrder();
     },
 
-    /*
+    /**
      * Unhold order
      * Send hold order if the unit is holding position
      * So it unholds
@@ -423,7 +443,7 @@ var order = {
             battleMode.holdPositionOrder();
     },
 
-    /*
+    /**
      * Self destruct
      * Pretty useful right?
      */
@@ -431,10 +451,10 @@ var order = {
         battleMode.selfDestructOrder();
     },
 
-    /*
+    /**
      * Runs an array of istrolid formated orders
      *
-     * orders: orders to run
+     * @param {Object[]} orders - orders to run
      */
     runOrders: function(orders) {
         var firstOrder = true;
@@ -450,14 +470,12 @@ var order = {
         }
     },
 
-    /*
+    /**
      * Find everything you want that's sorted in distance
      *
-     * check: function to check if this thing is what you want
-     * range: find things within this range, if range <= 0, check everything
-     * closeTo: sort using the distance between the target and closeTo
-     *      default is the current ordering unit position,
-     *      or [0, 0] if not available
+     * @param {check} check - function to check if this thing is what you want
+     * @param {number} [range=-1] - find things within this range, if range <= 0, check everything
+     * @param {v2} closeTo - sort using the distance between the target and closeTo, default is the current ordering unit position, or [0, 0] if not available
      */
     findThings: function(check, range = -1, closeTo) {
         var rst = [];
@@ -478,11 +496,11 @@ var order = {
         return rst;
     },
 
-    /*
+    /**
      * Finds every weapons you want on a unit
      *
-     * unit: unit to find weapons on
-     * check: function to check if the weapon is what you want
+     * @param {unit} unit - unit to find weapons on
+     * @param {check} check - function to check if the weapon is what you want
      */
     findWeapons: function(unit, check) {
         var rst = [];
@@ -497,12 +515,15 @@ var order = {
         return rst;
     },
 
-    /*
+    /**
      * Get a unit's order
+     *
      * Use this function because in local games, it's unit.orders
      * but in multiplayer games, it's unit.preOrders
      * Note that you can't get orders of units that are not yours in multiplayer
      * (Used to be able to get them but not anymore)
+     *
+     * @param {unit} unit - Unit to get orders from
      */
     getUnitOrders: function(unit) {
         var unit = unit || order.unit;
@@ -519,14 +540,15 @@ var order = {
 //-----------------------------------------------------------------------------
 // Funtions that let you check stuff
 
+/** @namespace */
 var condition = {
 
-    /*
+    /**
      * If the position is in # dps area
      *
-     * pos: position to check
-     * side: your side, it only checks enemys' dps not friends'
-     * dps: how much dps
+     * @param {v2} pos - position to check
+     * @param {string} side - your side, only checks enemys' dps not friends'
+     * @param {number} dps - how much dps
      */
     inRangeDps: function(pos, side, dps) {
         var totalDps = 0;
@@ -547,13 +569,12 @@ var condition = {
         return totalDps >= dps;
     },
 
-    /*
+    /**
      * If the position is in range of specific weapons
      *
-     * pos: position to check
-     * side: your side, not checking weapons that are on the same side
-     * check: a function that check if this weapon is the weapon that
-     *  you want to test the range
+     * @param {v2} pos - position to check
+     * @param {string} side - your side, not checking weapons that are on the same side
+     * @param {check} check - if you want to check this weapon
      */
     inRangeWeapon: function(pos, side, check) {
         if(typeof check !== "function") return false;
@@ -574,6 +595,12 @@ var condition = {
         return false;
     },
 
+    /**
+     * If a unit has a certain weapon
+     *
+     * @param {unit} unit - unit to check
+     * @param {check} check - if you want to check this weapon is on the unit
+     */
     hasWeapon: function(unit, check) {
         var rst = [];
         if(unit && unit.unit && typeof check === "function") {
@@ -587,10 +614,10 @@ var condition = {
         return false;
     },
 
-    /*
+    /**
      * If this unit is busy going somewhere
      *
-     * unit: unit to check
+     * @param {object} unit - unit to check
      */
     isBusy: function(unit) {
         if(unit && unit.unit) {
@@ -599,10 +626,10 @@ var condition = {
         return false;
     },
 
-    /*
-     * If this unit is owned by commander and same side
+    /**
+     * If this thing is owned by commander and same side
      *
-     * unit: unit to check
+     * @param {thing} unit - unit to check
      */
     isMyUnit: function(unit) {
         return unit &&
@@ -610,20 +637,20 @@ var condition = {
             unit.owner === commander.number;
     },
 
-    /*
-     * If this unit is on the enmy side
+    /**
+     * If this thing is on the enmy side
      *
-     * unit: unit to check
+     * @param {thing} unit - unit to check
      */
     isEnemySide: function(unit) {
         return unit && unit.side === otherSide(commander.side);
     },
 
-    /*
+    /**
      * If this unit has player order queued
      * Only work on your own units
      *
-     * unit: unit to check
+     * @param {unit} unit - unit to check
      */
     hasPlayerOrder: function(unit) {
         var unitOrders = order.getUnitOrders();
@@ -638,10 +665,10 @@ var condition = {
         return false;
     },
 
-    /*
+    /**
      * If this unit is selected by player
      *
-     * unit: unit to cehck
+     * @param {unit} unit - unit to cehck
      */
     unitSelected: function(unit) {
         if(!unit) return;
@@ -657,16 +684,17 @@ var condition = {
 //-----------------------------------------------------------------------------
 // Movements
 
+/** @namespace */
 var movement = {
     dummyUnit: new types.Unit(),
 
-    /*
+    /**
      * Return a target from targets so every target is
      * spread to all units that calls this function and
      * has the same spec and side as the current ordering unit
      *
-     * targets: return 1 target out of the targets
-     * count: how many units for 1 target, 0 for as many as possible
+     * @param {things[]} targets - return 1 target out of the targets
+     * @param {number} [count=0] - how many units for 1 target, 0 for as many as possible
      */
     spread: function(targets, count = 0) {
 
@@ -718,12 +746,12 @@ var movement = {
         }
     },
 
-    /*
+    /**
      * Return a position that is inside radius of a position
      * and is closest to the current ordering unit
      *
-     * pos: position to go in range
-     * radius: the range radius
+     * @param {v2} pos - position to go in range
+     * @param {number} radius - radius to stay in
      */
     inRange: function(pos, radius) {
 
@@ -748,12 +776,12 @@ var movement = {
         return v2.sub(pos, v2.scale(v2.norm(v2.sub(pos, order.unit.pos, [0, 0])), radius - order.unit.radius), v2.create());
     },
 
-    /*
+    /**
      * Return a position that is out side of the radius when
      * the unit is within the distance
      *
-     * pos: position to flee
-     * radius: the range radius
+     * @param {v2} pos - position to flee
+     * @param {number} radius - the radius to flee
      */
     fleeRange: function(pos, radius) {
 
@@ -778,13 +806,13 @@ var movement = {
         return v2.sub(pos, v2.scale(v2.norm(v2.sub(pos, order.unit.pos, [0, 0])), radius + order.unit.radius), v2.create());
     },
 
-    /*
+    /**
      * Return a position that (try to) avoid all shots
      * that matches check function
      * It's basically moving to the opposite direction of bullets without stopping
      *
-     * avoidDamage: damage to avoid
-     * check: a function that check if you want to avoid this bullet
+     * @param {number} avoidDamage - damage to avoid
+     * @param {check} check - check if you want to avoid this bullet
      */
     avoidShots: function(avoidDamage, check) {
         if(!order.unit) return;
