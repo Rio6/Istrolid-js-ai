@@ -90,7 +90,7 @@ loadMod(theUrl) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open( "GET", theUrl, false );
     xmlHttp.send( null );
-    eval(xmlHttp.responseText);
+    (0, eval)(xmlHttp.responseText);
 }
 
 loadMod("https://raw.githubusercontent.com/Rio6/Istrolid-js-ai/master/r26Ai.js"));
