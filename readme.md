@@ -82,16 +82,5 @@ r26Ai.addAiRule({
 ### Use a loader
 A mod loader keeps your api up to date. You might not want that, though. Updates can break your ai.
 
-Install the mod loader script using the same way as [Installing on steam version](#installing-on-steam-version)
-
-A simple mod loader:
-```javascript
-loadMod(theUrl) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", theUrl, false );
-    xmlHttp.send( null );
-    (0, eval)(xmlHttp.responseText);
-}
-
-loadMod("https://raw.githubusercontent.com/Rio6/Istrolid-js-ai/master/r26Ai.js"));
-```
+You can use [my mod loader](https://gist.github.com/Rio6/7bef6ef21628efd37c3019634a5312a9) to load the api using this url: [https://raw.githubusercontent.com/Rio6/Istrolid-js-ai/master/r26Ai.js](https://raw.githubusercontent.com/Rio6/Istrolid-js-ai/master/r26Ai.js),
+and then load your ai with local mod.
