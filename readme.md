@@ -61,6 +61,8 @@ r26Ai.addAiRule({
         build.keepUnits(100, 1); // Keep 100 units on field
     }
 });
+
+r26Ai.enabled = true;
 ```
 
 ## Installation
