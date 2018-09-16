@@ -11,6 +11,8 @@
  * class `ai` is instantized (new'd) and add to every units that matches
  * the filter.
  *
+ * `tick` runs every tick
+ *
  * The `ai` object should have a run method. It is called every 30 ticks.
  * In `run`, you can call `order.findThings()` to get your targets
  * and maybe use functions in `movement.*` to get where you want to go, or just
@@ -26,6 +28,7 @@
  *      filter: function(unit) {
  *          return unit.name === "BANANA";
  *      },
+ *      tick: function() {},
  *      ai: function(unit) {
  *          this.run = function() {
  *              order.move([0, 0]);
@@ -168,6 +171,17 @@ var r26Ai = {
 
     tick: function() {
         if(r26Ai.enabled && commander && intp.state === "running" && commander.side !== "spectators") {
+            for(let i in r26Ai.rules) {
+                let rule = r26Ai.rules[i];
+                try {
+                    if(rule && typeof rule.tick === "function") {
+                        rule.tick();
+                    }
+                } catch(e) {
+                    console.error(e.stack);
+                }
+            }
+
             for(let i in sim.things) {
                 let thing = sim.things[i];
                 if(thing.r26Ai) {

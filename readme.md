@@ -11,6 +11,8 @@ Rule is an object, with 3 properties, `filter`, `ai`, and `build`.
 `filter` is a function with the argument `unit`.
 It should return true if your rule should be applied to that unit.
 
+`tick` runs every tick
+
 `ai` is an object with a `run` function. The run function is called every 30 ticks.
 In `run`, you can call `order.findThings()` to get your targets
 and maybe use functions in `movement.*` to get where you want to go, or just
@@ -29,6 +31,7 @@ r26Ai.clearAiRule();
 
 r26Ai.addAiRule({
     filter: unit => unit.name === "BERRY", // You can also use other properties, like unit.spec
+    tick: function() {},
     ai: function(unit) {
         // This is the ai code
         this.run = function() {
