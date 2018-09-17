@@ -31,7 +31,7 @@ r26Ai.clearAiRule();
 
 r26Ai.addAiRule({
     filter: unit => unit.name === "BERRY", // You can also use other properties, like unit.spec
-    tick: function() {},
+    tick: function(unit) {},
     ai: function(unit) {
         // This is the ai code
         this.run = function() {

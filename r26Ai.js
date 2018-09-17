@@ -28,7 +28,7 @@
  *      filter: function(unit) {
  *          return unit.name === "BANANA";
  *      },
- *      tick: function() {},
+ *      tick: function(unit) {},
  *      ai: function(unit) {
  *          this.run = function() {
  *              order.move([0, 0]);
@@ -171,17 +171,6 @@ var r26Ai = {
 
     tick: function() {
         if(r26Ai.enabled && commander && intp.state === "running" && commander.side !== "spectators") {
-            for(let i in r26Ai.rules) {
-                let rule = r26Ai.rules[i];
-                try {
-                    if(rule && typeof rule.tick === "function") {
-                        rule.tick();
-                    }
-                } catch(e) {
-                    console.error(e.stack);
-                }
-            }
-
             for(let i in sim.things) {
                 let thing = sim.things[i];
                 if(thing.r26Ai) {
@@ -197,31 +186,33 @@ var r26Ai = {
             }
             order.stopOrdering();
 
-            if(r26Ai.step % 48 === 0) {
-                let built = false;
-                for(let i in r26Ai.rules) {
-                    let rule = r26Ai.rules[i];
-                    for(let j = 0; j < commander.buildBar.length; j++) {
-                        let unit = buildBar.specToUnit(commander.buildBar[j]);
-                        try {
-                            if(unit && rule &&
-                                typeof rule.build === "function" &&
-                                typeof rule.filter === "function" &&
-                                rule.filter(unit)) {
+            let built = false;
+            for(let i in r26Ai.rules) {
+                let rule = r26Ai.rules[i];
+                for(let j = 0; j < commander.buildBar.length; j++) {
+                    let unit = buildBar.specToUnit(commander.buildBar[j]);
+                    try {
+                        if(unit && rule &&
+                            typeof rule.filter === "function" && rule.filter(unit)) {
+                            if(typeof rule.build === "function") {
+                                if(r26Ai.step % 48 === 0) {
+                                    build.startBuilding(j, rule.filter);
+                                    rule.build(unit);
 
-                                build.startBuilding(j, rule.filter);
-                                rule.build(unit);
-
-                                built = true;
+                                    built = true;
+                                }
                             }
-                        } catch(e) {
-                            console.error(e.stack);
+                            if(typeof rule.tick === "function") {
+                                rule.tick(unit);
+                            }
                         }
+                    } catch(e) {
+                        console.error(e.stack);
                     }
                 }
-                if(built)
-                    build.updateBuildQ();
             }
+            if(built)
+                build.updateBuildQ();
 
             r26Ai.step++;
         } else {
