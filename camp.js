@@ -70,7 +70,7 @@ r26Ai.addAiRule({
             if(enemy)
                 order.follow(enemy);
             else
-                order.follow(eSpawn);
+                order.move(eSpawn.pos);
         }
     },
     build: function(unit) {
