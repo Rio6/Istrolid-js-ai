@@ -106,7 +106,7 @@ r26Ai.addAiRule({
                 var enemy = enemies[0];
 
                 if(enemy) {
-                    if(v2.distance(enemy.pos, unit.pos) > 1500) {
+                    if(v2.distance(enemy.pos, unit.pos) > 1000) {
 
                         if(enemies.length >= 3 && bananaOrder)
                             enemies = enemies.filter(tgt => tgt.id !== bananaOrder.targetId);
