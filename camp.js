@@ -146,7 +146,7 @@ r26Ai.addAiRule({
 });
 
 r26Ai.addAiRule({
-    filter: unit => unit.name === "CHERRY",
+    filter: unit => unit.name === "RASPBERRY",
     ai: function(unit) {
         this.run = function() {
 
