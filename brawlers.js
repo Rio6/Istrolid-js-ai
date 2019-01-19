@@ -1,7 +1,7 @@
 /*
  * Use BANANA as main ship (spinal plasma brawler)
  * 2 PEAR follow 1 BANANA (phase brawler)
- * 3 LYCHEE in front of 1 BANANA (tri-torp boat)
+ * 3 CHERRY in front of 1 BANANA (tri-torp boat)
  * 5 BERRY on field to cap (lb fighters)
  */
 
@@ -324,7 +324,7 @@ r26Ai.addAiRule({
 });
 
 r26Ai.addAiRule({
-    filter: unit => unit.name === "LYCHEE",
+    filter: unit => unit.name === "CHERRY",
     ai: function(unit) {
 
         this.run = function() {
