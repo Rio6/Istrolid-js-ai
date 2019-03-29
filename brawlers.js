@@ -75,7 +75,7 @@ r26Ai.addAiRule({
             }
         }
 
-        if(commander.money < 2360) {
+        if(commander.money < 2370) {
             if(!b.spawned)
                 return;
         } else {
