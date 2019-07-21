@@ -7,6 +7,9 @@ survivalWave = function() {
             if(/Get ready/.test(line.text))
                 return 0;
 
+            if(line.text === "Gamke is about to start!")
+                return 0;
+
             let match = /Spawning wave (\d+)/.exec(line.text);
             if(match)
                 return +match[1];
@@ -205,7 +208,7 @@ r26Ai.addAiRule({
 
             let enemy = order.findThings(tgt =>
                 tgt.unit && tgt.side !== unit.side &&
-                (tgt.maxHP > 400 || tgt.maxSpeed * 16 < 80), 900)
+                (tgt.maxHP > 400 || tgt.maxSpeed * 16 < 80), 1000)
                     .sort((a, b) => b.cost - a.cost)[0];
             if(enemy) {
                 order.follow(enemy);
