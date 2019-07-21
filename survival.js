@@ -161,14 +161,13 @@ r26Ai.addAiRule({
                 tgt.missile && tgt.side !== unit.side,
                 unit.weaponRange);
 
-            if(bullets.length > 0) {
+            let enemy = order.findThings(tgt =>
+                tgt.unit && tgt.side !== unit.side)
+                    .sort((a, b) => b.cost - a.cost)[0];
+            if(enemy) {
+                var target = enemy.pos;
+            } else if(bullets.length > 0) {
                 var target = v2.scale(bullets.reduce((a, b) => v2.add(a, b.pos), [0, 0]), 1 / bullets.length);
-            } else {
-                let enemy = order.findThings(tgt =>
-                    tgt.unit && tgt.side !== unit.side)
-                        .sort((a, b) => b.cost - a.cost)[0];
-                if(enemy)
-                    var target = enemy.pos;
             }
 
             if(target) {
@@ -263,7 +262,7 @@ r26Ai.addAiRule({
 });
 
 r26Ai.addAiRule({
-    filter: unit => unit.parts.filter(p => p instanceof parts.AOEWarhead).length == 16,
+    filter: unit => unit.jumpCount === 4 && unit.moveEnergy === 169, // An unnamed nuke
     ai: function(unit) {
         this.run = function() {
             if(unit.id % 5 == r26Ai.step % 5) order.destruct();
