@@ -82,14 +82,10 @@ r26Ai.addAiRule({
 
             let points = order.findThings(target =>
                 target.commandPoint &&
-                (target.side !== unit.side || target.capping > 0) &&
-                !(condition.inRangeWeapon(target.pos, unit.side,
-                    weapon => weapon.range >= 610 &&
-                    (weapon.instant || weapon.tracking)) ||
-                    condition.inRangeDps(target.pos, unit.side, 100)), -1,
-                order.findThings(tgt => tgt.spawn && !tgt.side !== unit.side)[0].pos);
+                (target.side !== unit.side || target.capping > 0), -1);
+                
 
-            let point = movement.spread(points);
+            let point = movement.spread(points.slice(0, 5));
             if(point) {
                 let tgtPos = movement.inRange(point.pos, point.radius);
                 if(tgtPos) {
@@ -169,7 +165,8 @@ r26Ai.addAiRule({
                 var target = v2.scale(bullets.reduce((a, b) => v2.add(a, b.pos), [0, 0]), 1 / bullets.length);
             } else {
                 let enemy = order.findThings(tgt =>
-                    tgt.unit && tgt.side !== unit.side && tgt.hp <= 180)[0];
+                    tgt.unit && tgt.side !== unit.side)
+                        .sort((a, b) => b.cost - a.cost)[0];
                 if(enemy)
                     var target = enemy.pos;
             }
@@ -209,7 +206,7 @@ r26Ai.addAiRule({
 
             let enemy = order.findThings(tgt =>
                 tgt.unit && tgt.side !== unit.side &&
-                (tgt.maxHP > 400 || tgt.maxSpeed < 80), 1000)
+                (tgt.maxHP > 400 || tgt.maxSpeed * 16 < 80), 900)
                     .sort((a, b) => b.cost - a.cost)[0];
             if(enemy) {
                 order.follow(enemy);
