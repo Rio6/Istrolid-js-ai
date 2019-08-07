@@ -95,7 +95,7 @@ Interpolator.prototype.process = function(data) {
 
     for(let i in newIds) {
         let t = sim.things[newIds[i]];
-        if(t) {
+        if(t && t.unit) {
             r26Ai.addAiToUnit(t);
         }
     }
@@ -147,6 +147,7 @@ var r26Ai = {
     rules: [],
     enabled: false,
     step: 0,
+    manualBuild: false,
 
     addAiToUnit: function(unit) {
 
@@ -186,37 +187,39 @@ var r26Ai = {
             }
             order.stopOrdering();
 
-            let built = false;
-            for(let i in r26Ai.rules) {
-                let rule = r26Ai.rules[i];
-                for(let j = 0; j < commander.buildBar.length; j++) {
-                    let unit = buildBar.specToUnit(commander.buildBar[j]);
-                    try {
-                        if(unit && rule &&
-                            typeof rule.filter === "function" && rule.filter(unit)) {
-                            if(typeof rule.build === "function") {
-                                if(r26Ai.step % 48 === 0) {
-                                    build.startBuilding(j, rule.filter);
-                                    rule.build(unit);
+            if(!r26Ai.manualBuild) {
+                let built = false;
+                for(let i in r26Ai.rules) {
+                    let rule = r26Ai.rules[i];
+                    for(let j = 0; j < commander.buildBar.length; j++) {
+                        let unit = buildBar.specToUnit(commander.buildBar[j]);
+                        try {
+                            if(unit && rule &&
+                                typeof rule.filter === "function" && rule.filter(unit)) {
+                                if(typeof rule.build === "function") {
+                                    if(r26Ai.step % 48 === 0) {
+                                        build.startBuilding(j, rule.filter);
+                                        rule.build(unit);
 
-                                    built = true;
+                                        built = true;
+                                    }
+                                }
+                                if(typeof rule.tick === "function") {
+                                    rule.tick(unit);
                                 }
                             }
-                            if(typeof rule.tick === "function") {
-                                rule.tick(unit);
-                            }
+                        } catch(e) {
+                            console.error(e.stack);
                         }
-                    } catch(e) {
-                        console.error(e.stack);
                     }
                 }
+                if(built)
+                    build.updateBuildQ();
             }
-            if(built)
-                build.updateBuildQ();
 
             r26Ai.step++;
         } else {
-            build.resetBuildQueue();
+            if(!r26Ai.manualBuild) build.resetBuildQueue();
             r26Ai.step = 0;
         }
     },
@@ -251,10 +254,16 @@ var r26Ai = {
         }
     },
 
-    // Clear ai rules
-    clearAiRule:function() {
+    /// Clear ai rules
+    clearAiRule: function() {
         r26Ai.rules = [];
-    }
+        r26Ai.setManualBuild(false);
+    },
+
+    /// enable/disable manual building queue
+    setManualBuild: function(manual) {
+        r26Ai.manualBuild = manual
+    },
 }
 
 //-----------------------------------------------------------------------------
@@ -309,8 +318,8 @@ var build = {
 
     resetBuildQueue: function() {
         build.buildPriority = [];
-        index = -1;
-        filter = null;
+        build.index = -1;
+        build.filter = null;
     },
 
     /**
