@@ -146,7 +146,7 @@ r26Ai.addAiRule({
 });
 
 r26Ai.addAiRule({
-    filter: unit => unit.name === "RASPBERRY",
+    filter: unit => unit.name === "CHERRY",
     ai: function(unit) {
         this.run = function() {
 
@@ -167,25 +167,17 @@ r26Ai.addAiRule({
                 tgt.hp <= 300, 3000));
             if(enemy && (!melon || v2.distance(eSpawn.pos, enemy.pos) - v2.distance(eSpawn.pos, melon.pos) > -1500)) {
                 order.follow(enemy);
-            } else {
-                var avoidDest = movement.avoidShots(20);
-                if(avoidDest) {
-                    order.move(avoidDest);
-                    return;
-                }
-
-                if(melon) {
-                    let toDist = melon.radius + unit.radius + 100;
-                    if(v2.distance(unit.pos, melon.pos) > 500)
-                        order.move(movement.inRange(melon.pos, toDist));
-                }
+            } else if(melon) {
+                let toDist = melon.radius + unit.radius + 100;
+                if(v2.distance(unit.pos, melon.pos) > 500)
+                    order.move(movement.inRange(melon.pos, toDist));
             }
         };
     },
     build: function() {
         var melonCount = order.findThings(tgt =>
             tgt.name === "MELON" && condition.isMyUnit(tgt)).length;
-        build.keepUnits(Math.min(melonCount, 2), 3);
+        build.keepUnits(Math.min(melonCount, 2), -1);
     }
 });
 
