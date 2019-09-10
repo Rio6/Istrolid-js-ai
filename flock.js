@@ -2,16 +2,17 @@ r26Ai.clearAiRule();
 r26Ai.setManualBuild(true);
 
 var flockConfig = {
-    seperateRange: 80,
-    cohesionRange: 1000,
-    alignRange: 200,
-    alignMinSpeed: 0,
+    seperateRange: 120,
+    cohesionRange: 100,
+    alignRange: 100,
+    wanderTh: 1,
 
-    seekMult: 4,
-    fleeMult: 6,
-    seperateMult: 0.2,
-    cohesionMult: 1,
-    alignMult: 1,
+    seekMult: 1,
+    fleeMult: 2,
+    seperateMult: 0.6,
+    cohesionMult: 1.2,
+    alignMult: 2.2,
+    wanderMult: 0.1,
     currentMult: 0.02,
 };
 
@@ -28,28 +29,44 @@ var Flock = function(agent) {
     };
 
     this.seperate = (agents) => {
-        return this.flee(v2.scale(agents
+        let count = 0;
+        let avgPos = agents
+            .filter(agent => agent !== this.agent)
             .filter(({pos}) => v2.distance(pos, this.agent.pos) < flockConfig.seperateRange)
-            .reduce((a, {pos}) => v2.add(a, pos), [0, 0]),
-            1 / agents.length));
+            .filter(a => ++count)
+            .reduce((a, {pos}) => v2.add(a, pos), [0, 0]);
+
+        if(count > 0)
+            return this.flee(v2.scale(avgPos, 1 / count));
+        else
+            return [0, 0];
     };
 
     this.cohesion = (agents) => {
-        return this.seek(v2.scale(agents
+        let count = 0;
+        let avgPos = agents
+            .filter(agent => agent !== this.agent)
             .filter(({pos}) => v2.distance(pos, this.agent.pos) < flockConfig.cohesionRange)
-            .reduce((a, {pos}) => v2.add(a, pos), [0, 0]),
-            1 / agents.length));
+            .filter(a => ++count)
+            .reduce((a, {pos}) => v2.add(a, pos), [0, 0]);
+
+        if(count > 0)
+            return this.seek(v2.scale(avgPos, 1 / count));
+        else
+            return [0, 0];
     };
 
     this.align = (agents) => {
         let avgVel = v2.scale(agents
+            .filter(agent => agent !== this.agent)
             .filter(({pos}) => v2.distance(pos, this.agent.pos) < flockConfig.alignRange)
             .reduce((a, {vel}) => v2.add(a, vel), [0, 0]), 1 / agents.length);
-        if(v2.mag(avgVel) > flockConfig.alignMinSpeed)
-            return v2.norm(avgVel);
-        else
-            return [0, 0];
+        return v2.norm(avgVel);
     };
+
+    this.wander = () => {
+        return v2.pointTo([], Math.random() * flockConfig.wanderTh + this.agent.rot);
+    }
 };
 
 var AgentManager = function() {
@@ -77,21 +94,26 @@ r26Ai.addAiRule({
         this.run = () => {
             agentMgr.update(fighterFilter);
 
-            let destDir = [0, 0];
+            let destDir = v2.scale(unit.vel, flockConfig.currentMult, []);
+
             v2.add(destDir, v2.scale(this.flock.seperate(agentMgr.agents), flockConfig.seperateMult));
             v2.add(destDir, v2.scale(this.flock.cohesion(agentMgr.agents), flockConfig.cohesionMult));
             v2.add(destDir, v2.scale(this.flock.align(agentMgr.agents), flockConfig.alignMult));
-            v2.add(destDir, v2.scale(unit.vel, flockConfig.currentMult, []));
+            v2.add(destDir, v2.scale(this.flock.wander(), flockConfig.wanderMult));
 
-            let enemy = order.findThings(t =>
-                (t.unit && t.weapons.length > 0 || t.bullet) &&
-                t.side !== unit.side)[0];
-            if(enemy && v2.distance(enemy.pos, unit.pos) < 2000)
-                v2.add(destDir, v2.scale(this.flock.flee(enemy.pos), flockConfig.fleeMult));
+            //let enemy = order.findThings(t =>
+            //    (t.unit && t.weapons.length > 0 || t.bullet) &&
+            //    t.side !== unit.side)[0];
+            //if(enemy && v2.distance(enemy.pos, unit.pos) < 2000)
+            //    v2.add(destDir, v2.scale(this.flock.flee(enemy.pos), flockConfig.fleeMult));
 
-            let point = order.findThings(tgt => tgt.commandPoint && tgt.side !== unit.side)[0];
+            let point = order.findThings(tgt => tgt.commandPoint, types.CommandPoint.prototype.radius)[0];
             if(point)
-                v2.add(destDir, v2.scale(this.flock.seek(point.pos), flockConfig.seekMult));
+                v2.add(destDir, v2.scale(this.flock.flee(point.pos), flockConfig.fleeMult));
+
+            if(v2.mag(unit.pos) > 3000)
+                //v2.add(destDir, v2.scale(this.flock.seek([0, 0]), flockConfig.seekMult));
+                v2.add(destDir, v2.scale(this.flock.flee(v2.scale(unit.pos, 1.1, [])), flockConfig.seekMult));
 
             v2.norm(destDir);
             v2.scale(destDir, 800);
