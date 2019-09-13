@@ -65,7 +65,7 @@ var Flock = function(agent) {
     };
 
     this.wander = () => {
-        return v2.pointTo([], Math.random() * flockConfig.wanderTh + this.agent.rot);
+        return v2.pointTo([], (Math.random() * 2 - 1) * flockConfig.wanderTh + this.agent.rot);
     }
 };
 
