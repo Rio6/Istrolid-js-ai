@@ -21,7 +21,7 @@ r26Ai.addAiRule({
                 return false;
             });
 
-            if(index > 0) {
+            if(index >= 0) {
                 order.follow(units[(index+1) % units.length]);
             }
         };
