@@ -5,7 +5,7 @@ r26Ai.addAiRule({
     ai: function(unit) {
         this.run = function() {
 
-            var point = movement.spread(order.findThings(-1, target =>
+            var point = movement.spread(order.findThings(target =>
                 target.commandPoint));
             if(point) {
                 var dest = movement.inRange(point.pos, 5);
@@ -15,6 +15,7 @@ r26Ai.addAiRule({
         }
     },
     build: function(unit) {
+        build.buildUnits(100);
     }
 });
 
